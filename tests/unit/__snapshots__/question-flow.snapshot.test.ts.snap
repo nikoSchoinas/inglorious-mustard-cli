@@ -1,0 +1,580 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`rendered question flow per literacy register > phase 0 — developer 1`] = `
+{
+  "literacy": "developer",
+  "phase": 0,
+  "questions": [
+    {
+      "help": "This tunes how the rest of the questions are phrased. There is no wrong answer.",
+      "id": "p0.literacy",
+      "options": [
+        {
+          "label": "Never written code",
+          "value": "none",
+        },
+        {
+          "label": "Some — I've used AI builders or can read code",
+          "value": "some",
+        },
+        {
+          "label": "I'm a developer",
+          "value": "developer",
+        },
+      ],
+      "prompt": "Coding background?",
+      "type": "select",
+    },
+    {
+      "help": "Existing projects are not supported yet — MUSTARD will continue as if starting fresh.",
+      "id": "p0.project-type",
+      "options": [
+        {
+          "label": "Brand new — nothing built yet",
+          "value": "greenfield",
+        },
+        {
+          "label": "It already exists (not yet supported — continues as new)",
+          "value": "brownfield",
+        },
+      ],
+      "prompt": "Greenfield or brownfield?",
+      "type": "select",
+    },
+    {
+      "help": "MUSTARD writes setup files tuned to your agent. Pick "undecided" if you are not sure yet.",
+      "id": "p0.agent-target",
+      "options": [
+        {
+          "label": "Claude Code",
+          "value": "claude-code",
+        },
+        {
+          "label": "Codex",
+          "value": "codex",
+        },
+        {
+          "label": "Cursor",
+          "value": "cursor",
+        },
+        {
+          "label": "Copilot",
+          "value": "copilot",
+        },
+        {
+          "label": "Gemini CLI",
+          "value": "gemini-cli",
+        },
+        {
+          "label": "Antigravity",
+          "value": "antigravity",
+        },
+        {
+          "label": "Other",
+          "value": "other",
+        },
+        {
+          "label": "Undecided",
+          "value": "undecided",
+        },
+      ],
+      "prompt": "Target coding agent?",
+      "type": "select",
+    },
+    {
+      "help": "You bring your own key. You can run fully local and free via Ollama.",
+      "id": "p0.provider",
+      "options": [
+        {
+          "label": "Anthropic (Claude)",
+          "value": "anthropic",
+        },
+        {
+          "label": "OpenAI",
+          "value": "openai",
+        },
+        {
+          "label": "Google (Gemini)",
+          "value": "google",
+        },
+        {
+          "label": "Local models via Ollama",
+          "value": "ollama",
+        },
+      ],
+      "prompt": "Provider for MUSTARD’s own inference?",
+      "type": "select",
+    },
+  ],
+}
+`;
+
+exports[`rendered question flow per literacy register > phase 0 — none 1`] = `
+{
+  "literacy": "none",
+  "phase": 0,
+  "questions": [
+    {
+      "help": "This tunes how the rest of the questions are phrased. There is no wrong answer.",
+      "id": "p0.literacy",
+      "options": [
+        {
+          "label": "Never written code",
+          "value": "none",
+        },
+        {
+          "label": "Some — I've used AI builders or can read code",
+          "value": "some",
+        },
+        {
+          "label": "I'm a developer",
+          "value": "developer",
+        },
+      ],
+      "prompt": "How much have you built before?",
+      "type": "select",
+    },
+    {
+      "help": "Existing projects are not supported yet — MUSTARD will continue as if starting fresh.",
+      "id": "p0.project-type",
+      "options": [
+        {
+          "label": "Brand new — nothing built yet",
+          "value": "greenfield",
+        },
+        {
+          "label": "It already exists (not yet supported — continues as new)",
+          "value": "brownfield",
+        },
+      ],
+      "prompt": "Are you starting something brand new, or working on a project that already exists?",
+      "type": "select",
+    },
+    {
+      "help": "MUSTARD writes setup files tuned to your agent. Pick "undecided" if you are not sure yet.",
+      "id": "p0.agent-target",
+      "options": [
+        {
+          "label": "Claude Code",
+          "value": "claude-code",
+        },
+        {
+          "label": "Codex",
+          "value": "codex",
+        },
+        {
+          "label": "Cursor",
+          "value": "cursor",
+        },
+        {
+          "label": "Copilot",
+          "value": "copilot",
+        },
+        {
+          "label": "Gemini CLI",
+          "value": "gemini-cli",
+        },
+        {
+          "label": "Antigravity",
+          "value": "antigravity",
+        },
+        {
+          "label": "Other",
+          "value": "other",
+        },
+        {
+          "label": "Undecided",
+          "value": "undecided",
+        },
+      ],
+      "prompt": "Which AI coding assistant will you use to build this?",
+      "type": "select",
+    },
+    {
+      "help": "You bring your own key. You can run fully local and free via Ollama.",
+      "id": "p0.provider",
+      "options": [
+        {
+          "label": "Anthropic (Claude)",
+          "value": "anthropic",
+        },
+        {
+          "label": "OpenAI",
+          "value": "openai",
+        },
+        {
+          "label": "Google (Gemini)",
+          "value": "google",
+        },
+        {
+          "label": "Local models via Ollama",
+          "value": "ollama",
+        },
+      ],
+      "prompt": "Which AI service should MUSTARD itself use to ask you questions?",
+      "type": "select",
+    },
+  ],
+}
+`;
+
+exports[`rendered question flow per literacy register > phase 0 — some 1`] = `
+{
+  "literacy": "some",
+  "phase": 0,
+  "questions": [
+    {
+      "help": "This tunes how the rest of the questions are phrased. There is no wrong answer.",
+      "id": "p0.literacy",
+      "options": [
+        {
+          "label": "Never written code",
+          "value": "none",
+        },
+        {
+          "label": "Some — I've used AI builders or can read code",
+          "value": "some",
+        },
+        {
+          "label": "I'm a developer",
+          "value": "developer",
+        },
+      ],
+      "prompt": "How much coding experience do you have?",
+      "type": "select",
+    },
+    {
+      "help": "Existing projects are not supported yet — MUSTARD will continue as if starting fresh.",
+      "id": "p0.project-type",
+      "options": [
+        {
+          "label": "Brand new — nothing built yet",
+          "value": "greenfield",
+        },
+        {
+          "label": "It already exists (not yet supported — continues as new)",
+          "value": "brownfield",
+        },
+      ],
+      "prompt": "Is this a fresh start or an existing project?",
+      "type": "select",
+    },
+    {
+      "help": "MUSTARD writes setup files tuned to your agent. Pick "undecided" if you are not sure yet.",
+      "id": "p0.agent-target",
+      "options": [
+        {
+          "label": "Claude Code",
+          "value": "claude-code",
+        },
+        {
+          "label": "Codex",
+          "value": "codex",
+        },
+        {
+          "label": "Cursor",
+          "value": "cursor",
+        },
+        {
+          "label": "Copilot",
+          "value": "copilot",
+        },
+        {
+          "label": "Gemini CLI",
+          "value": "gemini-cli",
+        },
+        {
+          "label": "Antigravity",
+          "value": "antigravity",
+        },
+        {
+          "label": "Other",
+          "value": "other",
+        },
+        {
+          "label": "Undecided",
+          "value": "undecided",
+        },
+      ],
+      "prompt": "Which AI coding agent will you use?",
+      "type": "select",
+    },
+    {
+      "help": "You bring your own key. You can run fully local and free via Ollama.",
+      "id": "p0.provider",
+      "options": [
+        {
+          "label": "Anthropic (Claude)",
+          "value": "anthropic",
+        },
+        {
+          "label": "OpenAI",
+          "value": "openai",
+        },
+        {
+          "label": "Google (Gemini)",
+          "value": "google",
+        },
+        {
+          "label": "Local models via Ollama",
+          "value": "ollama",
+        },
+      ],
+      "prompt": "Which model provider will MUSTARD use?",
+      "type": "select",
+    },
+  ],
+}
+`;
+
+exports[`rendered question flow per literacy register > phase 1 — developer 1`] = `
+{
+  "literacy": "developer",
+  "phase": 1,
+  "questions": [
+    {
+      "help": "A few sentences. Write for a person, not a pitch deck.",
+      "id": "p1.why",
+      "prompt": "Problem statement: why build this, and who is underserved without it?",
+      "type": "editor",
+    },
+    {
+      "id": "p1.name",
+      "prompt": "Project name / codename?",
+      "type": "text",
+    },
+    {
+      "help": "These become your manifesto. You can add your own on the next step.",
+      "id": "p1.rules",
+      "options": [
+        {
+          "label": "Stay true to your users",
+          "value": "stay-true-to-users",
+        },
+        {
+          "label": "Ship before perfect",
+          "value": "ship-before-perfect",
+        },
+        {
+          "label": "Document it or it doesn't exist",
+          "value": "document-or-it-didnt-happen",
+        },
+        {
+          "label": "Don't instruct AI about problems you don't understand",
+          "value": "dont-instruct-ai-blindly",
+        },
+        {
+          "label": "Write my own",
+          "value": "write-my-own",
+        },
+      ],
+      "prompt": "Select the guiding rules for this project.",
+      "type": "multiselect",
+    },
+    {
+      "id": "p1.custom-rules",
+      "prompt": "Custom rules, one per line.",
+      "type": "editor",
+    },
+    {
+      "id": "p1.machine-rules",
+      "options": [
+        {
+          "label": "Docstrings mandatory",
+          "value": "docstrings-mandatory",
+        },
+        {
+          "label": "Tests alongside features",
+          "value": "tests-alongside-features",
+        },
+        {
+          "label": "No unrequested .md files",
+          "value": "no-unrequested-md",
+        },
+        {
+          "label": "Conventional commits",
+          "value": "conventional-commits",
+        },
+        {
+          "label": "Typed everywhere",
+          "value": "typed-everywhere",
+        },
+        {
+          "label": "No new dependency without asking",
+          "value": "no-new-dependency-without-asking",
+        },
+      ],
+      "prompt": "Machine-directed rules to enforce:",
+      "type": "multiselect",
+    },
+  ],
+}
+`;
+
+exports[`rendered question flow per literacy register > phase 1 — none 1`] = `
+{
+  "literacy": "none",
+  "phase": 1,
+  "questions": [
+    {
+      "help": "A few sentences. Write for a person, not a pitch deck.",
+      "id": "p1.why",
+      "prompt": "Why does this need to exist, and who is worse off if it doesn't?",
+      "type": "editor",
+    },
+    {
+      "id": "p1.name",
+      "prompt": "What do you want to call this? A working name is fine.",
+      "type": "text",
+    },
+    {
+      "help": "These become your manifesto. You can add your own on the next step.",
+      "id": "p1.rules",
+      "options": [
+        {
+          "label": "Stay true to your users",
+          "value": "stay-true-to-users",
+        },
+        {
+          "label": "Ship before perfect",
+          "value": "ship-before-perfect",
+        },
+        {
+          "label": "Document it or it doesn't exist",
+          "value": "document-or-it-didnt-happen",
+        },
+        {
+          "label": "Don't instruct AI about problems you don't understand",
+          "value": "dont-instruct-ai-blindly",
+        },
+        {
+          "label": "Write my own",
+          "value": "write-my-own",
+        },
+      ],
+      "prompt": "Which of these should be rules your project lives by? Pick the ones that matter to you.",
+      "type": "multiselect",
+    },
+    {
+      "id": "p1.custom-rules",
+      "prompt": "Write your own rules, one per line.",
+      "type": "editor",
+    },
+    {
+      "id": "p1.machine-rules",
+      "options": [
+        {
+          "label": "Docstrings mandatory",
+          "value": "docstrings-mandatory",
+        },
+        {
+          "label": "Tests alongside features",
+          "value": "tests-alongside-features",
+        },
+        {
+          "label": "No unrequested .md files",
+          "value": "no-unrequested-md",
+        },
+        {
+          "label": "Conventional commits",
+          "value": "conventional-commits",
+        },
+        {
+          "label": "Typed everywhere",
+          "value": "typed-everywhere",
+        },
+        {
+          "label": "No new dependency without asking",
+          "value": "no-new-dependency-without-asking",
+        },
+      ],
+      "prompt": "Which of these should the AI agent always follow when it writes code for you?",
+      "type": "multiselect",
+    },
+  ],
+}
+`;
+
+exports[`rendered question flow per literacy register > phase 1 — some 1`] = `
+{
+  "literacy": "some",
+  "phase": 1,
+  "questions": [
+    {
+      "help": "A few sentences. Write for a person, not a pitch deck.",
+      "id": "p1.why",
+      "prompt": "Why does this need to exist, and who is worse off without it?",
+      "type": "editor",
+    },
+    {
+      "id": "p1.name",
+      "prompt": "Project name or codename?",
+      "type": "text",
+    },
+    {
+      "help": "These become your manifesto. You can add your own on the next step.",
+      "id": "p1.rules",
+      "options": [
+        {
+          "label": "Stay true to your users",
+          "value": "stay-true-to-users",
+        },
+        {
+          "label": "Ship before perfect",
+          "value": "ship-before-perfect",
+        },
+        {
+          "label": "Document it or it doesn't exist",
+          "value": "document-or-it-didnt-happen",
+        },
+        {
+          "label": "Don't instruct AI about problems you don't understand",
+          "value": "dont-instruct-ai-blindly",
+        },
+        {
+          "label": "Write my own",
+          "value": "write-my-own",
+        },
+      ],
+      "prompt": "Which team rules should apply?",
+      "type": "multiselect",
+    },
+    {
+      "id": "p1.custom-rules",
+      "prompt": "Write your own rules, one per line.",
+      "type": "editor",
+    },
+    {
+      "id": "p1.machine-rules",
+      "options": [
+        {
+          "label": "Docstrings mandatory",
+          "value": "docstrings-mandatory",
+        },
+        {
+          "label": "Tests alongside features",
+          "value": "tests-alongside-features",
+        },
+        {
+          "label": "No unrequested .md files",
+          "value": "no-unrequested-md",
+        },
+        {
+          "label": "Conventional commits",
+          "value": "conventional-commits",
+        },
+        {
+          "label": "Typed everywhere",
+          "value": "typed-everywhere",
+        },
+        {
+          "label": "No new dependency without asking",
+          "value": "no-new-dependency-without-asking",
+        },
+      ],
+      "prompt": "Which machine rules should the agent enforce?",
+      "type": "multiselect",
+    },
+  ],
+}
+`;
