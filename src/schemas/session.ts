@@ -47,7 +47,7 @@ export type CostEntry = z.infer<typeof CostEntry>;
 /**
  * The entire committed session state (`mustard/.session.json`, spec §9.3).
  *
- * `facts` is the merged store read by `when` expressions (§9.4): `maps_to`
+ * `facts` is the merged store read by `when` predicates (§9.4): `mapsTo`
  * targets from answered questions plus ANALYSE `derivedFacts`. The merge policy
  * (explicit answers overwrite derived facts; derived facts never overwrite
  * answers) lives in `engine/facts.ts`.

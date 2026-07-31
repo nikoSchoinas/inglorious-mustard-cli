@@ -1,8 +1,8 @@
 /**
  * The facts-merge policy — locked in M1 (technical-plan §2.1, pitfall §7.8).
  *
- * `MustardSession.facts` is the merged store that every bank file's `when`
- * expression reads from (§9.4). Facts arrive from two sources: `maps_to` targets
+ * `MustardSession.facts` is the merged store that every bank module's `when`
+ * predicate reads from (§9.4). Facts arrive from two sources: `mapsTo` targets
  * of answered questions, and the `derivedFacts` of the ANALYSE pass. The policy
  * cannot change later, so it is defined here as a pure function:
  *
