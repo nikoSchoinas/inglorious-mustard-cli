@@ -21,7 +21,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "commander": "^12.1.0"
+    "commander": "^12.1.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
