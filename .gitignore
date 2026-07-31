@@ -144,3 +144,7 @@ vite.config.ts.timestamp-*
 
 # Dev files
 dev
+
+# MUSTARD session transients (the .session.json itself is committed by design)
+mustard/.session.json.bak
+mustard/.session.json.*.tmp
