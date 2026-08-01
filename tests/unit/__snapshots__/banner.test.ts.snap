@@ -1,0 +1,8 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`banner > renders a deterministic banner 1`] = `
+"┌───────────────────────────────────────┐
+│ Inglorious M.U.S.T.A.R.D.             │
+│ Software specification for AI agents. │
+└───────────────────────────────────────┘"
+`;
