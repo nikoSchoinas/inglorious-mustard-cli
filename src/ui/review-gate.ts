@@ -1,11 +1,12 @@
 import type { Prompter } from './prompter.js';
 
 /**
- * The review-gate component — a STUB for M3 (spec §8.2 step 5). It fixes the
- * choice enum and the display+select interface now; wiring `edit` to the editor
- * launcher and the `redo-*` choices to re-synthesis is M5's job. Every generated
- * artifact passes through here before it is written — the line that separates
- * MUSTARD from vibe coding (§7.3.2).
+ * The review-gate component (spec §8.2 step 5). It owns the display+select
+ * interaction and returns the user's choice; the M5 runner
+ * (`engine/runner.ts`) orchestrates what each choice means — `edit` via the
+ * editor launcher, `redo-*` via a re-run of SYNTHESISE with steering. Every
+ * generated artifact passes through here before it is written — the line that
+ * separates MUSTARD from vibe coding (§7.3.2).
  */
 export type ReviewChoice = 'accept' | 'edit' | 'redo-detail' | 'redo-differently';
 
