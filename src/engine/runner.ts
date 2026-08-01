@@ -1,16 +1,29 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import type { LlmOutcome } from '../llm/client.js';
 import { resolvePrompt } from '../questions/index.js';
 import type { Facts, Phase, Question } from '../questions/types.js';
+import {
+  type FrontmatterMeta,
+  deriveSessionId,
+  withFrontmatter,
+} from '../render/markdown/frontmatter.js';
 import type { PhaseAnalysis } from '../schemas/analysis.js';
 import type { Answer, MustardSession, PhaseState } from '../schemas/session.js';
 import { type EditorLauncher, defaultEditorLauncher } from '../ui/editor.js';
 import type { Prompter } from '../ui/prompter.js';
 import { reviewGate } from '../ui/review-gate.js';
+import { readVersion } from '../version.js';
 import { canSynthesise, selectFollowUpGaps } from './budget.js';
-import { type IncomingFact, mergeFacts } from './facts.js';
-import { mustardDir, saveSession } from './session.js';
+import { type IncomingFact, applyFacts } from './facts.js';
+import {
+  type RunnerIO,
+  fileArtifactIO,
+  isAnswered,
+  phaseStateOf,
+  withPhase,
+} from './orchestrator.js';
+import { saveSession } from './session.js';
+
+export type { RunnerIO } from './orchestrator.js';
 
 /**
  * The per-phase state machine (spec §8.2) — the heart of the product. Generic
@@ -56,11 +69,6 @@ export type SynthesiseFn = (
   steering?: 'detail' | 'differently',
 ) => Promise<LlmOutcome<SynthesisOutput>>;
 
-/** Where artifacts are written. Abstracted so tests target a temp dir. */
-export interface RunnerIO {
-  writeArtifact(name: string, body: string): void;
-}
-
 export interface RunPhaseDeps {
   prompter: Prompter;
   analyse: AnalyseFn;
@@ -73,17 +81,8 @@ export interface RunPhaseDeps {
   now?: () => string;
   /** Persist step. Defaults to `saveSession` (atomic write + `.bak`). */
   save?: (session: MustardSession) => MustardSession;
-}
-
-/** Default artifact writer: `mustard/<name>` in the cwd, creating the dir if needed. */
-function fileArtifactIO(): RunnerIO {
-  return {
-    writeArtifact(name, body) {
-      const dir = mustardDir();
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(join(dir, name), body, 'utf8');
-    },
-  };
+  /** Package version for degraded-artifact frontmatter. Defaults to the runtime version. */
+  mustardVersion?: string;
 }
 
 /**
@@ -99,8 +98,9 @@ export async function runPhase(
   const editor = deps.editor ?? defaultEditorLauncher;
   const now = deps.now ?? (() => new Date().toISOString());
   const save = deps.save ?? ((s: MustardSession) => saveSession(s));
+  const mustardVersion = deps.mustardVersion ?? readVersion();
 
-  const ctx: Ctx = { phase, deps, io, editor, now, save };
+  const ctx: Ctx = { phase, deps, io, editor, now, save, mustardVersion };
 
   // Ensure the PhaseState exists and is marked in_progress before any question.
   let current = withPhase(session, phase.phase, (_s, ps) => {
@@ -115,7 +115,7 @@ export async function runPhase(
 
   // Phase 0 (Recon) has no synthesis: accept and advance once seed is done.
   if (phase.synthesis === undefined) {
-    return accept(ctx, current, undefined, []);
+    return accept(ctx, current);
   }
 
   // ANALYSE / FOLLOW-UP loop (§8.2 steps 2–3), bounded by the budget guards.
@@ -132,6 +132,7 @@ interface Ctx {
   editor: EditorLauncher;
   now: () => string;
   save: (session: MustardSession) => MustardSession;
+  mustardVersion: string;
 }
 
 // --------------------------------------------------------------------------
@@ -209,8 +210,7 @@ async function runAnalyse(ctx: Ctx, session: MustardSession): Promise<MustardSes
         value: f.value,
         source: 'derived',
       }));
-      // mergeFacts keeps arrays `readonly`; the session store types them mutable.
-      next.facts = mergeFacts(next.facts, incoming) as MustardSession['facts'];
+      applyFacts(next, incoming);
     }
   });
 }
@@ -219,97 +219,141 @@ async function runAnalyse(ctx: Ctx, session: MustardSession): Promise<MustardSes
 // SYNTHESISE → REVIEW → WRITE
 // --------------------------------------------------------------------------
 
+type PendingSynthesis = NonNullable<PhaseState['pendingSynthesis']>;
+
 async function runSynthesisAndReview(ctx: Ctx, session: MustardSession): Promise<MustardSession> {
-  const current = withPhaseSaved(ctx, session, (_next, ps) => {
+  let current = withPhaseSaved(ctx, session, (_next, ps) => {
     ps.status = 'awaiting_review';
   });
 
   let steering: 'detail' | 'differently' | undefined;
 
   while (true) {
-    const outcome = await ctx.deps.synthesise(ctx.phase, current, steering);
+    // A persisted pendingSynthesis means SYNTHESISE already completed on a prior
+    // run — resume the review where it stopped rather than re-synthesising
+    // (§7.3.1: a Ctrl-C mid-review must not cost tokens or change the artifacts).
+    if (phaseStateOf(current, ctx.phase.phase).pendingSynthesis === undefined) {
+      const outcome = await ctx.deps.synthesise(ctx.phase, current, steering);
 
-    let object: unknown;
-    let artifacts: ReadonlyArray<{ name: string; body: string }>;
-    if (outcome.status === 'ok') {
-      object = outcome.value.object;
-      artifacts = outcome.value.artifacts;
-    } else {
-      // Degraded fallback (§9.8): render the raw answers under the artifact's
-      // headings with `degraded: true`, and say so on screen. No typed object.
-      object = undefined;
-      artifacts = degradedArtifacts(ctx.phase, current);
-      ctx.deps.prompter.note(
-        `Synthesis fell back to a degraded artifact (${outcome.reason}). The raw answers are recorded; you can edit or redo.`,
-        'Degraded',
-      );
+      let pending: PendingSynthesis;
+      if (outcome.status === 'ok') {
+        pending = {
+          object: outcome.value.object,
+          degraded: false,
+          artifacts: outcome.value.artifacts.map((a) => ({ ...a })),
+          reviewed: [],
+        };
+      } else {
+        // Degraded fallback (§9.8): render the raw answers under the artifact's
+        // headings with `degraded: true`, and say so on screen. No typed object.
+        pending = {
+          object: undefined,
+          degraded: true,
+          artifacts: degradedArtifacts(ctx, current),
+          reviewed: [],
+        };
+        ctx.deps.prompter.note(
+          `Synthesis fell back to a degraded artifact (${outcome.reason}). The raw answers are recorded; you can edit or redo.`,
+          'Degraded',
+        );
+      }
+      current = withPhaseSaved(ctx, current, (_next, ps) => {
+        ps.pendingSynthesis = pending;
+      });
     }
 
-    const review = await reviewAndWrite(ctx, artifacts);
+    const review = await reviewPending(ctx, current);
+    current = review.session;
     if (review.redo) {
       steering = review.redo;
-      continue; // regenerate the whole phase and re-review
+      // Discard the rejected synthesis so the next loop iteration regenerates.
+      current = withPhaseSaved(ctx, current, (_next, ps) => {
+        ps.pendingSynthesis = undefined;
+      });
+      continue;
     }
-    return accept(ctx, current, object, review.paths, review.edited);
+    return accept(ctx, current);
   }
 }
 
 interface ReviewResult {
   redo?: 'detail' | 'differently';
-  paths: string[];
-  edited: boolean;
+  session: MustardSession;
 }
 
-/** Walk each artifact through the review gate; write accepted/edited ones. */
-async function reviewAndWrite(
-  ctx: Ctx,
-  artifacts: ReadonlyArray<{ name: string; body: string }>,
-): Promise<ReviewResult> {
-  const paths: string[] = [];
-  let edited = false;
+/**
+ * Walk each not-yet-reviewed artifact of the pending synthesis through the review
+ * gate; write accepted/edited ones and persist the per-artifact outcome
+ * immediately, so resume never re-reviews (or overwrites) an artifact the user
+ * already dealt with.
+ */
+async function reviewPending(ctx: Ctx, session: MustardSession): Promise<ReviewResult> {
+  let current = session;
 
-  for (const artifact of artifacts) {
+  for (const artifact of pendingOf(current, ctx).artifacts) {
+    const reviewed = pendingOf(current, ctx).reviewed.some((r) => r.name === artifact.name);
+    if (reviewed) {
+      continue;
+    }
+
     const choice = await reviewGate(ctx.deps.prompter, {
       title: artifact.name,
       body: artifact.body,
     });
 
     if (choice === 'redo-detail') {
-      return { redo: 'detail', paths, edited };
+      return { redo: 'detail', session: current };
     }
     if (choice === 'redo-differently') {
-      return { redo: 'differently', paths, edited };
+      return { redo: 'differently', session: current };
     }
 
+    let body = artifact.body;
+    let edited = false;
     if (choice === 'edit') {
       // The edited markdown becomes canonical for this artifact; the typed object
       // is still retained downstream, with the `edited` flag marking the drift.
-      const body = await ctx.editor.launch(artifact.body);
-      ctx.io.writeArtifact(artifact.name, body);
+      body = await ctx.editor.launch(artifact.body);
       edited = true;
-    } else {
-      ctx.io.writeArtifact(artifact.name, artifact.body);
     }
-    paths.push(artifact.name);
+    ctx.io.writeArtifact(artifact.name, body);
+    current = withPhaseSaved(ctx, current, (_next, ps) => {
+      const pending = ps.pendingSynthesis;
+      if (pending === undefined) {
+        throw new Error('pendingSynthesis vanished mid-review — this is a bug.');
+      }
+      const stored = pending.artifacts.find((a) => a.name === artifact.name);
+      if (stored) {
+        stored.body = body; // keep session state matching what is on disk
+      }
+      pending.reviewed.push({ name: artifact.name, edited });
+    });
   }
 
-  return { paths, edited };
+  return { session: current };
 }
 
-/** Mark the phase accepted, retain the object, record artifacts, advance. */
-function accept(
-  ctx: Ctx,
-  session: MustardSession,
-  object: unknown,
-  paths: string[],
-  edited = false,
-): MustardSession {
+function pendingOf(session: MustardSession, ctx: Ctx): PendingSynthesis {
+  const pending = phaseStateOf(session, ctx.phase.phase).pendingSynthesis;
+  if (pending === undefined) {
+    throw new Error('No pendingSynthesis to review — SYNTHESISE should have persisted one.');
+  }
+  return pending;
+}
+
+/**
+ * Mark the phase accepted from its fully-reviewed pending synthesis: retain the
+ * object, record artifacts, clear the in-flight state, advance.
+ */
+function accept(ctx: Ctx, session: MustardSession): MustardSession {
   return withPhaseSaved(ctx, session, (next, ps) => {
+    const pending = ps.pendingSynthesis;
     ps.status = 'accepted';
     ps.acceptedAt = ctx.now();
-    ps.artifactPaths = paths;
-    ps.edited = edited;
-    ps.synthesisedObject = object;
+    ps.artifactPaths = pending?.artifacts.map((a) => a.name) ?? [];
+    ps.edited = pending?.reviewed.some((r) => r.edited) ?? false;
+    ps.synthesisedObject = pending?.object;
+    ps.pendingSynthesis = undefined;
     next.currentPhase = Math.max(next.currentPhase, ctx.phase.phase + 1);
   });
 }
@@ -393,9 +437,9 @@ function recordAnswer(
       askedAt: ctx.now(),
     });
     if (question.mapsTo !== undefined) {
-      next.facts = mergeFacts(next.facts, [
+      applyFacts(next, [
         { key: question.mapsTo, value: value as IncomingFact['value'], source: 'answer' },
-      ]) as MustardSession['facts'];
+      ]);
     }
   });
 }
@@ -423,17 +467,29 @@ function recordFollowUp(
 // --------------------------------------------------------------------------
 
 function degradedArtifacts(
-  phase: Phase,
+  ctx: Ctx,
   session: MustardSession,
 ): Array<{ name: string; body: string }> {
-  const ps = phaseStateOf(session, phase.phase);
+  const ps = phaseStateOf(session, ctx.phase.phase);
   const answerLines = ps.answers
     .map((a) => `- **${a.questionId}**: ${formatValue(a.value)}`)
     .join('\n');
-  const names = phase.synthesis?.artifacts ?? [];
+  const names = ctx.phase.synthesis?.artifacts ?? [];
+  // Degraded artifacts still carry the full standard frontmatter (§9.7) so drift
+  // detection (v0.3) can correlate them; `degraded: true` flags the fallback.
+  const meta: FrontmatterMeta = {
+    phase: ctx.phase.phase,
+    sessionId: deriveSessionId(session),
+    generatedAt: ctx.now(),
+    mustardVersion: ctx.mustardVersion,
+    degraded: true,
+  };
   return names.map((name) => ({
     name,
-    body: `---\ndegraded: true\nphase: ${phase.phase}\n---\n\n# ${titleFor(name)}\n\n> Generated in degraded mode — synthesis failed, so the raw answers are recorded below for you to edit.\n\n## Answers\n\n${answerLines}\n`,
+    body: withFrontmatter(
+      meta,
+      `# ${titleFor(name)}\n\n> Generated in degraded mode — synthesis failed, so the raw answers are recorded below for you to edit.\n\n## Answers\n\n${answerLines}\n`,
+    ),
   }));
 }
 
@@ -448,50 +504,6 @@ function formatValue(value: AnswerValue): string {
 // --------------------------------------------------------------------------
 // Session/phase mutation helpers (immutable: clone → mutate → save)
 // --------------------------------------------------------------------------
-
-function phaseIndexOf(session: MustardSession, id: number): number {
-  return session.phases.findIndex((p) => p.id === id);
-}
-
-function phaseStateOf(session: MustardSession, id: number): PhaseState {
-  const ps = session.phases.find((p) => p.id === id);
-  if (ps === undefined) {
-    throw new Error(`No PhaseState for phase ${id} — runPhase should have created it.`);
-  }
-  return ps;
-}
-
-function isAnswered(ps: PhaseState, questionId: string, source: Answer['source']): boolean {
-  return ps.answers.some((a) => a.questionId === questionId && a.source === source);
-}
-
-/** Clone the session, ensure the phase exists, run `mutate`, return the new session. */
-function withPhase(
-  session: MustardSession,
-  id: number,
-  mutate: (next: MustardSession, ps: PhaseState) => void,
-): MustardSession {
-  const next = structuredClone(session);
-  let idx = phaseIndexOf(next, id);
-  if (idx === -1) {
-    next.phases.push({
-      id,
-      status: 'pending',
-      answers: [],
-      followUpsAsked: 0,
-      analysisRuns: 0,
-      artifactPaths: [],
-      edited: false,
-    });
-    idx = next.phases.length - 1;
-  }
-  const ps = next.phases[idx];
-  if (ps === undefined) {
-    throw new Error(`Unreachable: phase ${id} missing after ensure.`);
-  }
-  mutate(next, ps);
-  return next;
-}
 
 /** `withPhase` followed by an immediate persist — the durability boundary. */
 function withPhaseSaved(

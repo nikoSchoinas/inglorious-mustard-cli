@@ -358,10 +358,123 @@ describe('runPhase — degraded synthesis', () => {
     });
     const body = io.files.get('01-MINI.md') ?? '';
     expect(body).toContain('degraded: true');
+    // Degraded artifacts carry the FULL standard frontmatter (§9.7), not a stub.
+    expect(body).toContain('generated_by: mustard');
+    expect(body).toContain('session_id:');
+    expect(body).toContain(`generated_at: ${CLOCK()}`);
     expect(body).toContain('m.name'); // raw answers rendered under headings
     expect(body).toContain('My App');
     expect(phaseOf(result).synthesisedObject).toBeUndefined();
     expect(phaseOf(result).status).toBe('accepted');
+  });
+});
+
+describe('runPhase — resume mid-review', () => {
+  const twoArtifacts = () =>
+    miniPhase({
+      synthesis: { pass: 'synth-mini', model: 'deep', artifacts: ['01-MINI.md', '01-EXTRA.md'] },
+    });
+  const twoArtifactOutcome: LlmOutcome<{
+    object: unknown;
+    artifacts: { name: string; body: string }[];
+  }> = {
+    status: 'ok',
+    value: {
+      object: { v: 1 },
+      artifacts: [
+        { name: '01-MINI.md', body: 'ONE' },
+        { name: '01-EXTRA.md', body: 'TWO' },
+      ],
+    },
+  };
+
+  it('does not re-synthesise and preserves an already-edited artifact', async () => {
+    // Run 1: edit artifact 1, then Ctrl-C at artifact 2's review gate.
+    const cancelling = new ScriptedPrompter([
+      { kind: 'text', value: 'X' },
+      { kind: 'select', value: 'a' },
+      { kind: 'select', value: 'edit' }, // 01-MINI.md → edited and written
+      CANCEL, // Ctrl-C at 01-EXTRA.md's gate
+    ]);
+    const { save, snapshots } = memorySave();
+    const io = memoryIO();
+    const synth = fakeSynthesise([twoArtifactOutcome]);
+    const deps = {
+      analyse: fakeAnalyse([{ status: 'ok', value: ready() }]).fn,
+      synthesise: synth.fn,
+      io,
+      editor: { launch: async () => 'HAND-EDITED' },
+      now: CLOCK,
+      save,
+    };
+
+    await expect(
+      runPhase(twoArtifacts(), freshSession(), { prompter: cancelling, ...deps }),
+    ).rejects.toBeInstanceOf(PromptCancelledError);
+    expect(io.files.get('01-MINI.md')).toBe('HAND-EDITED');
+
+    const crashed = snapshots.at(-1);
+    if (crashed === undefined) {
+      throw new Error('expected a persisted snapshot before the cancel');
+    }
+    // The per-artifact review outcome was persisted before the cancel.
+    expect(phaseOf(crashed).pendingSynthesis?.reviewed).toEqual([
+      { name: '01-MINI.md', edited: true },
+    ]);
+
+    // Run 2: resume — only artifact 2 is reviewed; no second SYNTHESISE call.
+    const resuming = new ScriptedPrompter([{ kind: 'select', value: 'accept' }]);
+    const result = await runPhase(twoArtifacts(), crashed, { ...deps, prompter: resuming });
+
+    expect(synth.steerings).toHaveLength(1); // synthesised exactly once across both runs
+    expect(io.files.get('01-MINI.md')).toBe('HAND-EDITED'); // the edit survived the resume
+    expect(io.files.get('01-EXTRA.md')).toBe('TWO');
+    const ps = phaseOf(result);
+    expect(ps.status).toBe('accepted');
+    expect(ps.edited).toBe(true);
+    expect(ps.artifactPaths).toEqual(['01-MINI.md', '01-EXTRA.md']);
+    expect(ps.synthesisedObject).toEqual({ v: 1 });
+    expect(ps.pendingSynthesis).toBeUndefined(); // cleared on acceptance
+  });
+
+  it('re-synthesises after an edit when a later artifact is redone', async () => {
+    const prompter = new ScriptedPrompter([
+      { kind: 'text', value: 'X' },
+      { kind: 'select', value: 'a' },
+      { kind: 'select', value: 'edit' }, // 01-MINI.md (first synthesis)
+      { kind: 'select', value: 'redo-detail' }, // 01-EXTRA.md → regenerate everything
+      { kind: 'select', value: 'accept' }, // 01-MINI.md (second synthesis)
+      { kind: 'select', value: 'accept' }, // 01-EXTRA.md (second synthesis)
+    ]);
+    const io = memoryIO();
+    const second: typeof twoArtifactOutcome = {
+      status: 'ok',
+      value: {
+        object: { v: 2 },
+        artifacts: [
+          { name: '01-MINI.md', body: 'ONE-2' },
+          { name: '01-EXTRA.md', body: 'TWO-2' },
+        ],
+      },
+    };
+    const synth = fakeSynthesise([twoArtifactOutcome, second]);
+    const result = await runPhase(twoArtifacts(), freshSession(), {
+      prompter,
+      analyse: fakeAnalyse([{ status: 'ok', value: ready() }]).fn,
+      synthesise: synth.fn,
+      io,
+      editor: { launch: async () => 'HAND-EDITED' },
+      now: CLOCK,
+      save: memorySave().save,
+    });
+
+    expect(synth.steerings).toEqual([undefined, 'detail']);
+    // The redo regenerated BOTH artifacts; the pre-redo edit is superseded.
+    expect(io.files.get('01-MINI.md')).toBe('ONE-2');
+    expect(io.files.get('01-EXTRA.md')).toBe('TWO-2');
+    const ps = phaseOf(result);
+    expect(ps.edited).toBe(false); // the accepted synthesis was not edited
+    expect(ps.synthesisedObject).toEqual({ v: 2 });
   });
 });
 
