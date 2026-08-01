@@ -5,7 +5,7 @@ import type { Phase } from '../types.js';
  * establishes IDE/tooling choice and the global `literacy` register before the
  * seven phases begin. Nearly LLM-free — no synthesis pass.
  *
- * NOTE: question 0.5 (API-key capture + connectivity check + cost/telemetry
+ * NOTE: question 0.5 (API-key capture + connectivity check + telemetry
  * consent) is deliberately NOT modelled here. It is a special engine step
  * (M4 connectivity + M6 init flow), not a declarative `Question`.
  */
