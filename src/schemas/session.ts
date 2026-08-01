@@ -39,6 +39,21 @@ export const PhaseState = z.object({
   // edit. `unknown` because the object type differs per phase (manifesto,
   // DomainExtraction, StackDecision[], …).
   synthesisedObject: z.unknown().optional(),
+  // In-flight SYNTHESISE → REVIEW state (§7.3.1 for review-stage work): the typed
+  // object and rendered artifacts of a completed synthesis, plus which artifacts
+  // the user has already reviewed. Lets a Ctrl-C mid-review resume at the next
+  // unreviewed artifact without re-running SYNTHESISE (which costs tokens and
+  // could return something different) and without clobbering an artifact the user
+  // already accepted or hand-edited. Cleared on phase acceptance, so steady-state
+  // sessions never carry artifact bodies.
+  pendingSynthesis: z
+    .object({
+      object: z.unknown().optional(),
+      degraded: z.boolean().default(false),
+      artifacts: z.array(z.object({ name: z.string(), body: z.string() })),
+      reviewed: z.array(z.object({ name: z.string(), edited: z.boolean() })).default([]),
+    })
+    .optional(),
 });
 export type PhaseState = z.infer<typeof PhaseState>;
 
@@ -69,6 +84,12 @@ export const MustardSession = z.object({
   facts: z
     .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]))
     .default({}),
+  // Provenance for `facts` — which keys are owned by an explicit answer vs an
+  // ANALYSE derivedFact. Needed so a re-ANALYSE may correct its own earlier
+  // derived facts while never clobbering an answer (engine/facts.ts). Additive
+  // and defaulted so pre-provenance sessions still parse; their keys are then
+  // conservatively treated as answer-owned.
+  factSources: z.record(z.string(), z.enum(['answer', 'derived'])).default({}),
   tasks: z.array(Task).default([]),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),

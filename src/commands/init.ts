@@ -1,3 +1,4 @@
+import { MissionHaltError } from '../engine/errors.js';
 import { saveSession, sessionExists } from '../engine/session.js';
 import type { MustardSession } from '../schemas/session.js';
 import { showBanner } from '../ui/banner.js';
@@ -43,6 +44,10 @@ export async function runInit(deps: CommandDeps = {}): Promise<void> {
       'Done',
     );
   } catch (err) {
+    if (err instanceof MissionHaltError) {
+      print(pc.yellow(err.message));
+      return exit(1);
+    }
     return handleCancellation(err, { print, exit });
   } finally {
     dispose?.();
@@ -60,6 +65,7 @@ function freshSession(now: () => string): MustardSession {
     currentPhase: 0,
     phases: [],
     facts: {},
+    factSources: {},
     tasks: [],
     createdAt: ts,
     updatedAt: ts,
