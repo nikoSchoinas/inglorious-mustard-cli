@@ -344,7 +344,7 @@ exports[`rendered question flow per literacy register > phase 1 — developer 1`
       "type": "text",
     },
     {
-      "help": "These become your manifesto. You can add your own on the next step.",
+      "help": "These become your manifesto. Pick the 8–10 that matter most; you can add your own on the next step.",
       "id": "p1.rules",
       "options": [
         {
@@ -362,6 +362,50 @@ exports[`rendered question flow per literacy register > phase 1 — developer 1`
         {
           "label": "Don't instruct AI about problems you don't understand",
           "value": "dont-instruct-ai-blindly",
+        },
+        {
+          "label": "Choose simple over clever",
+          "value": "simple-over-clever",
+        },
+        {
+          "label": "Make it work in small steps",
+          "value": "small-steps",
+        },
+        {
+          "label": "Delete more than you add",
+          "value": "delete-more-than-you-add",
+        },
+        {
+          "label": "Own every decision the agent makes for you",
+          "value": "own-your-decisions",
+        },
+        {
+          "label": "Read the code before you run it",
+          "value": "read-before-you-run",
+        },
+        {
+          "label": "Security is not a later problem",
+          "value": "security-is-not-later",
+        },
+        {
+          "label": "Keep one source of truth",
+          "value": "one-source-of-truth",
+        },
+        {
+          "label": "Name things honestly",
+          "value": "name-things-honestly",
+        },
+        {
+          "label": "Fail loudly, never silently",
+          "value": "fail-loudly",
+        },
+        {
+          "label": "Test what would hurt to break",
+          "value": "test-what-would-hurt",
+        },
+        {
+          "label": "Finish what you start before starting more",
+          "value": "finish-before-starting",
         },
         {
           "label": "Write my own",
@@ -428,7 +472,7 @@ exports[`rendered question flow per literacy register > phase 1 — none 1`] = `
       "type": "text",
     },
     {
-      "help": "These become your manifesto. You can add your own on the next step.",
+      "help": "These become your manifesto. Pick the 8–10 that matter most; you can add your own on the next step.",
       "id": "p1.rules",
       "options": [
         {
@@ -446,6 +490,50 @@ exports[`rendered question flow per literacy register > phase 1 — none 1`] = `
         {
           "label": "Don't instruct AI about problems you don't understand",
           "value": "dont-instruct-ai-blindly",
+        },
+        {
+          "label": "Choose simple over clever",
+          "value": "simple-over-clever",
+        },
+        {
+          "label": "Make it work in small steps",
+          "value": "small-steps",
+        },
+        {
+          "label": "Delete more than you add",
+          "value": "delete-more-than-you-add",
+        },
+        {
+          "label": "Own every decision the agent makes for you",
+          "value": "own-your-decisions",
+        },
+        {
+          "label": "Read the code before you run it",
+          "value": "read-before-you-run",
+        },
+        {
+          "label": "Security is not a later problem",
+          "value": "security-is-not-later",
+        },
+        {
+          "label": "Keep one source of truth",
+          "value": "one-source-of-truth",
+        },
+        {
+          "label": "Name things honestly",
+          "value": "name-things-honestly",
+        },
+        {
+          "label": "Fail loudly, never silently",
+          "value": "fail-loudly",
+        },
+        {
+          "label": "Test what would hurt to break",
+          "value": "test-what-would-hurt",
+        },
+        {
+          "label": "Finish what you start before starting more",
+          "value": "finish-before-starting",
         },
         {
           "label": "Write my own",
@@ -512,7 +600,7 @@ exports[`rendered question flow per literacy register > phase 1 — some 1`] = `
       "type": "text",
     },
     {
-      "help": "These become your manifesto. You can add your own on the next step.",
+      "help": "These become your manifesto. Pick the 8–10 that matter most; you can add your own on the next step.",
       "id": "p1.rules",
       "options": [
         {
@@ -530,6 +618,50 @@ exports[`rendered question flow per literacy register > phase 1 — some 1`] = `
         {
           "label": "Don't instruct AI about problems you don't understand",
           "value": "dont-instruct-ai-blindly",
+        },
+        {
+          "label": "Choose simple over clever",
+          "value": "simple-over-clever",
+        },
+        {
+          "label": "Make it work in small steps",
+          "value": "small-steps",
+        },
+        {
+          "label": "Delete more than you add",
+          "value": "delete-more-than-you-add",
+        },
+        {
+          "label": "Own every decision the agent makes for you",
+          "value": "own-your-decisions",
+        },
+        {
+          "label": "Read the code before you run it",
+          "value": "read-before-you-run",
+        },
+        {
+          "label": "Security is not a later problem",
+          "value": "security-is-not-later",
+        },
+        {
+          "label": "Keep one source of truth",
+          "value": "one-source-of-truth",
+        },
+        {
+          "label": "Name things honestly",
+          "value": "name-things-honestly",
+        },
+        {
+          "label": "Fail loudly, never silently",
+          "value": "fail-loudly",
+        },
+        {
+          "label": "Test what would hurt to break",
+          "value": "test-what-would-hurt",
+        },
+        {
+          "label": "Finish what you start before starting more",
+          "value": "finish-before-starting",
         },
         {
           "label": "Write my own",
