@@ -1,12 +1,11 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { syncSessionIdentity } from '../engine/identity.js';
+import { fileArtifactIO } from '../engine/orchestrator.js';
 import { type RunPhase2ADeps, runPhase2A as realRunPhase2A } from '../engine/phase-2a.js';
 import { type RunPhase2BDeps, runPhase2B as realRunPhase2B } from '../engine/phase-2b.js';
 import { type RunPhase3Deps, runPhase3 as realRunPhase3 } from '../engine/phase-3.js';
 import type { AnalyseFn, RunnerIO, SynthesiseFn } from '../engine/runner.js';
 import { runPhase } from '../engine/runner.js';
-import { mustardDir, saveSession } from '../engine/session.js';
+import { saveSession } from '../engine/session.js';
 import type { BuildPassesOptions, Passes } from '../llm/passes/index.js';
 import { buildPasses as realBuildPasses } from '../llm/passes/index.js';
 import type { LLMTransport } from '../llm/transport.js';
@@ -84,6 +83,23 @@ export async function driveMission(
 
   let current = session;
 
+  // Surface hand-edit staleness (technical-plan §2.4): later phases derive from
+  // the typed `synthesisedObject`, NOT from an artifact the user rewrote in
+  // $EDITOR. Before running a phase, note any earlier accepted-and-edited phase
+  // once, so the user knows to carry substantive edits forward themselves.
+  const staleWarned = new Set<number>();
+  const warnStaleEdits = (upTo: number): void => {
+    for (const p of current.phases) {
+      if (p.id < upTo && p.status === 'accepted' && p.edited && !staleWarned.has(p.id)) {
+        staleWarned.add(p.id);
+        deps.prompter.note(
+          `You hand-edited ${p.artifactPaths.join(', ')} in Phase ${p.id}. What comes next derives from the recorded answers, not your edits — if the edits changed the substance, restate it in your upcoming answers.`,
+          'Edited artifact',
+        );
+      }
+    }
+  };
+
   // Phase 0 — Recon (structured questions only).
   if (!isAccepted(current, 0)) {
     current = await runPhase(phase0, current, {
@@ -132,6 +148,7 @@ export async function driveMission(
   // part B has wrapped `synthesisedObject` into a `Phase2Output` (which part A would
   // fail to re-parse as a `DomainExtraction`); until then, part A resumes normally.
   if (!isAccepted(current, 2) && !phase2bStarted(current)) {
+    warnStaleEdits(2);
     current = await runPhase2A(current, {
       prompter: deps.prompter,
       extract: passes.extract,
@@ -166,6 +183,7 @@ export async function driveMission(
   // (§8.6 doesn't fit the generic machine). Emits `03-SCHEMAS.md` only —
   // `03-STRUCTURE.md` is a Phase 4 artifact (pitfall §7.1). Idempotent.
   if (!isAccepted(current, 3)) {
+    warnStaleEdits(3);
     current = await runPhase3(current, {
       prompter: deps.prompter,
       proposeEnumValues: passes.proposeEnumValues,
@@ -199,15 +217,4 @@ function resolveProvider(session: MustardSession): Provider {
   throw new Error(
     `No provider recorded from Phase 0 (facts.provider=${JSON.stringify(value)}). Re-run \`mustard init\`.`,
   );
-}
-
-/** Default artifact writer, cwd-aware so commands and tests target a chosen directory. */
-function fileArtifactIO(cwd?: string): RunnerIO {
-  return {
-    writeArtifact(name, body) {
-      const dir = mustardDir(cwd);
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(join(dir, name), body, 'utf8');
-    },
-  };
 }
