@@ -17,6 +17,10 @@ import { type ProposeEnumValuesFn, createProposeEnumValues } from './propose-enu
 import { type ProposeStackFn, createProposeStack } from './propose-stack.js';
 import { type ProposeStructureFn, createProposeStructure } from './propose-structure.js';
 import { type SuggestCapabilitiesFn, createSuggestCapabilities } from './suggest-capabilities.js';
+import {
+  type SynthesiseArchitectureFn,
+  createSynthesiseArchitecture,
+} from './synthesise-architecture.js';
 import { createSynthesise } from './synthesise.js';
 
 /**
@@ -50,6 +54,8 @@ export interface Passes {
   explainStack: ExplainStackFn;
   /** Phase 4 folder-tree pass (fast) — owned by `runPhase4`. */
   proposeStructure: ProposeStructureFn;
+  /** Phase 5 architecture-synthesis pass (deep) — owned by `runPhase5`. */
+  synthesiseArchitecture: SynthesiseArchitectureFn;
 }
 
 export interface BuildPassesOptions {
@@ -95,5 +101,6 @@ export function buildPasses(config: MustardConfig, opts: BuildPassesOptions = {}
     proposeStack: createProposeStack({ client, model: deepModel }),
     explainStack: createExplainStack({ client, model: fastModel }),
     proposeStructure: createProposeStructure({ client, model: fastModel }),
+    synthesiseArchitecture: createSynthesiseArchitecture({ client, model: deepModel }),
   };
 }
