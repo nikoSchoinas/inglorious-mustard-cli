@@ -16,7 +16,7 @@ describe('rendered question flow per literacy register', () => {
 
   // Phase 1: facts that trigger the conditional custom-rules question, so the
   // snapshot exercises the full flow including the `when`-gated editor.
-  const phase1Facts: Facts = { 'manifesto.rules': 'write-my-own' };
+  const phase1Facts: Facts = { 'manifesto.rules': ['write-my-own'] };
   for (const literacy of LITERACIES) {
     it(`phase 1 — ${literacy}`, () => {
       expect(renderQuestionFlow(phase1, literacy, phase1Facts)).toMatchSnapshot();
@@ -25,6 +25,18 @@ describe('rendered question flow per literacy register', () => {
 
   it('phase 1 hides the custom-rules editor when not requested', () => {
     const flow = renderQuestionFlow(phase1, 'none', {});
+    expect(flow.questions.map((q) => q.id)).not.toContain('p1.custom-rules');
+  });
+
+  it('phase 1 shows the custom-rules editor when write-my-own is among the selected rules', () => {
+    const facts: Facts = { 'manifesto.rules': ['ship-before-perfect', 'write-my-own'] };
+    const flow = renderQuestionFlow(phase1, 'none', facts);
+    expect(flow.questions.map((q) => q.id)).toContain('p1.custom-rules');
+  });
+
+  it('phase 1 hides the custom-rules editor when other rules are selected without it', () => {
+    const facts: Facts = { 'manifesto.rules': ['ship-before-perfect'] };
+    const flow = renderQuestionFlow(phase1, 'none', facts);
     expect(flow.questions.map((q) => q.id)).not.toContain('p1.custom-rules');
   });
 });

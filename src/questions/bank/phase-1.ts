@@ -67,7 +67,7 @@ export const phase1: Phase = {
       // Only ask when the user asked to write their own on the previous question.
       when: (facts) => {
         const rules = fact(facts, 'manifesto.rules');
-        return typeof rules === 'string' && rules.includes('write-my-own');
+        return Array.isArray(rules) && rules.includes('write-my-own');
       },
       prompt: {
         none: 'Write your own rules, one per line.',

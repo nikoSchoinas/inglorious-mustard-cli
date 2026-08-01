@@ -39,6 +39,31 @@ describe('when predicates + absent facts', () => {
   });
 });
 
+describe('when predicates over array (multiselect) facts', () => {
+  const wantsCustom: Question['when'] = (f) => {
+    const rules = fact(f, 'manifesto.rules');
+    return Array.isArray(rules) && rules.includes('write-my-own');
+  };
+
+  it('is true when the token is among the selected values', () => {
+    expect(wantsCustom?.({ 'manifesto.rules': ['ship-before-perfect', 'write-my-own'] })).toBe(
+      true,
+    );
+  });
+
+  it('is false when the token is not selected', () => {
+    expect(wantsCustom?.({ 'manifesto.rules': ['ship-before-perfect'] })).toBe(false);
+  });
+
+  it('is false when the fact is absent', () => {
+    expect(wantsCustom?.({})).toBe(false);
+  });
+
+  it('is false when the fact is a scalar, never a substring match', () => {
+    expect(wantsCustom?.({ 'manifesto.rules': 'write-my-own-thing' })).toBe(false);
+  });
+});
+
 describe('resolvePrompt fallback', () => {
   const q: Question = {
     id: 'x.only-none-and-developer',
