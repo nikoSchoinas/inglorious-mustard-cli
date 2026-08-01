@@ -7,6 +7,7 @@ import { PromptCancelledError } from '../../src/ui/prompter.js';
 import {
   CANCEL_3_SCRIPT,
   FULL_3_SCRIPT,
+  MANY_TO_MANY_3_SCRIPT,
   RESUME_3_SCRIPT,
   phase3StartSession,
   runPhase3Scripted,
@@ -89,6 +90,17 @@ describe('runPhase3 — full replay run', () => {
     expect(phase3State(session).status).toBe('accepted');
     expect(phase3State(session).artifactPaths).toEqual(['03-SCHEMAS.md']);
     expect(session.currentPhase).toBe(4);
+  });
+
+  it('resolves both-directions-yes to many_to_many', async () => {
+    const { session } = await runPhase3Scripted({
+      transport: replayTransport(),
+      script: MANY_TO_MANY_3_SCRIPT,
+    });
+    const habit = outputOf(session).models.find((m) => m.entityId === 'e1');
+    expect(habit?.relationships).toEqual([
+      { toEntityId: 'e2', cardinality: 'many_to_many', confidence: 'high' },
+    ]);
   });
 
   it('snapshots the rendered 03-SCHEMAS.md', async () => {

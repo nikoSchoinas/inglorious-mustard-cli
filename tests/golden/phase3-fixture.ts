@@ -91,16 +91,28 @@ export const FAKE_STEPS: FakeStep[] = [{ kind: 'object', value: CANNED_ENUM }];
  * values, choose a retention policy, accept the artifact.
  */
 export const FULL_3_SCRIPT: ScriptedStep[] = [
-  { kind: 'confirm', value: true }, // cardinality: one Habit → many CheckIns
+  { kind: 'confirm', value: true }, // cardinality forward: one Habit → many CheckIns
+  { kind: 'confirm', value: false }, // cardinality reverse: a CheckIn belongs to one Habit
   { kind: 'multiselect', value: ENUM_PICKED }, // Habit.status enum values
   { kind: 'text', value: ENUM_CUSTOM }, // one custom enum value
   { kind: 'select', value: 'recoverable' }, // p3.retention
   { kind: 'select', value: 'accept' }, // review 03-SCHEMAS.md
 ];
 
+/** Both cardinality confirms answered yes — resolves to many_to_many. */
+export const MANY_TO_MANY_3_SCRIPT: ScriptedStep[] = [
+  { kind: 'confirm', value: true },
+  { kind: 'confirm', value: true },
+  { kind: 'multiselect', value: ENUM_PICKED },
+  { kind: 'text', value: ENUM_CUSTOM },
+  { kind: 'select', value: 'recoverable' },
+  { kind: 'select', value: 'accept' },
+];
+
 /** Cancel at the retention select, after cardinality and enum discovery are done. */
 export const CANCEL_3_SCRIPT: ScriptedStep[] = [
   { kind: 'confirm', value: true },
+  { kind: 'confirm', value: false },
   { kind: 'multiselect', value: ENUM_PICKED },
   { kind: 'text', value: ENUM_CUSTOM },
   { kind: 'cancel' }, // Ctrl-C at p3.retention
@@ -155,6 +167,7 @@ export function phase3StartSession(): MustardSession {
       },
     ],
     facts: { actorCount: 1 },
+    factSources: { actorCount: 'derived' },
     tasks: [],
     createdAt: ts,
     updatedAt: ts,

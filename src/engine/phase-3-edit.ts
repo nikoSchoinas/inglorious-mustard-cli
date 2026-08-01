@@ -90,13 +90,20 @@ export function entityName(output: Phase3Output, entityId: string): string {
 }
 
 /**
- * The plain-language cardinality confirm (§8.6: "Can one order contain items from more
- * than one seller?"). A pure string template over the two entity names — structural,
- * not phase content, so it lives here and not in the bank (the M2 tripwire holds).
- * Answering `yes` maps to `one_to_many`, `no` to `one_to_one`.
+ * The plain-language cardinality confirms (§8.6: "Can one order contain items from more
+ * than one seller?"). Pure string templates over the two entity names — structural,
+ * not phase content, so they live here and not in the bank (the M2 tripwire holds).
+ *
+ * Two confirms resolve the three cardinalities: forward `no` → `one_to_one`; forward
+ * `yes` asks the reverse question, and reverse `yes` → `many_to_many`, reverse `no`
+ * → `one_to_many`. Without the reverse question `many_to_many` would be unreachable.
  */
 export function cardinalityQuestion(fromName: string, toName: string): string {
   return `Can one ${fromName} be linked to more than one ${toName}?`;
+}
+
+export function reverseCardinalityQuestion(fromName: string, toName: string): string {
+  return `And the other way round — can one ${toName} be linked to more than one ${fromName}?`;
 }
 
 /** Set one relationship's cardinality and mark it resolved (`confidence: 'high'`). */

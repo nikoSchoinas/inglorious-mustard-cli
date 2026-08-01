@@ -1,5 +1,3 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import type { ProposeEnumValuesFn } from '../llm/passes/propose-enum-values.js';
 import { phase3 } from '../questions/bank/phase-3.js';
 import { resolvePrompt } from '../questions/index.js';
@@ -13,19 +11,28 @@ import type { Answer, MustardSession, PhaseState } from '../schemas/session.js';
 import { type EditorLauncher, defaultEditorLauncher } from '../ui/editor.js';
 import type { Prompter } from '../ui/prompter.js';
 import { readVersion } from '../version.js';
-import { type IncomingFact, mergeFacts } from './facts.js';
+import { type IncomingFact, applyFacts } from './facts.js';
+import {
+  type RunnerIO,
+  fileArtifactIO,
+  isAnswered,
+  makeAnswer,
+  phaseStateOf,
+  splitList,
+  withPhase,
+} from './orchestrator.js';
 import {
   ambiguousRelationships,
   cardinalityQuestion,
   entityName,
   enumAttributes,
+  reverseCardinalityQuestion,
   seedModel,
   setCardinality,
   setEnumValues,
   setRetention,
 } from './phase-3-edit.js';
-import type { RunnerIO } from './runner.js';
-import { mustardDir, saveSession } from './session.js';
+import { saveSession } from './session.js';
 
 /**
  * Phase 3 — Structure & Schemas (spec §8.6, technical-plan §5, M10). "Translation mode":
@@ -97,7 +104,7 @@ export async function runPhase3(
   const { prompter } = deps;
 
   let current = save(
-    withPhase3(session, (_next, ps) => {
+    withPhase(session, PHASE, (_next, ps) => {
       if (ps.status === 'pending') {
         ps.status = 'in_progress';
       }
@@ -105,53 +112,60 @@ export async function runPhase3(
   );
 
   // 0. SEED — derive the working model from Phase 2's confirmed extraction (idempotent).
-  if (!isAnswered(phase3State(current), SEEDED)) {
+  if (!isAnswered(phaseState(current), SEEDED)) {
     const model = seedModel(readExtraction(current));
     current = save(
-      withPhase3(current, (_next, ps) => {
+      withPhase(current, PHASE, (_next, ps) => {
         ps.synthesisedObject = model;
-        ps.answers.push(answer(SEEDED, 'confirm', true, 'derived', now()));
+        ps.answers.push(makeAnswer(SEEDED, 'confirm', true, 'derived', now()));
       }),
     );
   }
 
   // 1. CARDINALITY — disambiguate each `ambiguous` relationship (§8.6). Deterministic
-  // templated confirm — no LLM. Indices are absolute within the entity's relationships
-  // and never shift, so the per-relationship markers stay stable across resume.
-  for (const ref of ambiguousRelationships(readOutput(phase3State(current)))) {
+  // templated confirms — no LLM. Two directions resolve all three cardinalities:
+  // forward `no` → one_to_one; forward `yes` + reverse `no` → one_to_many; both `yes`
+  // → many_to_many. Indices are absolute within the entity's relationships and never
+  // shift, so the per-relationship markers stay stable across resume.
+  for (const ref of ambiguousRelationships(readOutput(phaseState(current)))) {
     const marker = cardMarker(ref.fromEntityId, ref.index);
-    if (isAnswered(phase3State(current), marker)) {
+    if (isAnswered(phaseState(current), marker)) {
       continue;
     }
-    const output = readOutput(phase3State(current));
+    const output = readOutput(phaseState(current));
+    const fromName = entityName(output, ref.fromEntityId);
+    const toName = entityName(output, ref.toEntityId);
     const many = await prompter.confirm({
-      message: cardinalityQuestion(
-        entityName(output, ref.fromEntityId),
-        entityName(output, ref.toEntityId),
-      ),
+      message: cardinalityQuestion(fromName, toName),
     });
-    const cardinality = many ? 'one_to_many' : 'one_to_one';
+    let cardinality: 'one_to_one' | 'one_to_many' | 'many_to_many' = 'one_to_one';
+    if (many) {
+      const reverse = await prompter.confirm({
+        message: reverseCardinalityQuestion(fromName, toName),
+      });
+      cardinality = reverse ? 'many_to_many' : 'one_to_many';
+    }
     current = save(
-      withPhase3(current, (_next, ps) => {
+      withPhase(current, PHASE, (_next, ps) => {
         ps.synthesisedObject = setCardinality(
           readOutput(ps),
           ref.fromEntityId,
           ref.index,
           cardinality,
         );
-        ps.answers.push(answer(marker, 'confirm', many, 'seed', now()));
+        ps.answers.push(makeAnswer(marker, 'select', cardinality, 'seed', now()));
       }),
     );
   }
 
   // 2. ENUM DISCOVERY — for each `isEnum` attribute, propose values (LLM), then let the
   // user confirm/extend them (§8.6). Persisted per attribute.
-  for (const ref of enumAttributes(readOutput(phase3State(current)))) {
+  for (const ref of enumAttributes(readOutput(phaseState(current)))) {
     const marker = enumMarker(ref.entityId, ref.attrName);
-    if (isAnswered(phase3State(current), marker)) {
+    if (isAnswered(phaseState(current), marker)) {
       continue;
     }
-    const output = readOutput(phase3State(current));
+    const output = readOutput(phaseState(current));
     const model = output.models.find((m) => m.entityId === ref.entityId);
     const attr = model?.attributes.find((a) => a.name === ref.attrName);
     const outcome = await deps.proposeEnumValues(current, {
@@ -177,15 +191,15 @@ export async function runPhase3(
     const values = [...picked, ...custom];
 
     current = save(
-      withPhase3(current, (_next, ps) => {
+      withPhase(current, PHASE, (_next, ps) => {
         ps.synthesisedObject = setEnumValues(readOutput(ps), ref.entityId, ref.attrName, values);
-        ps.answers.push(answer(marker, 'multiselect', values, 'seed', now()));
+        ps.answers.push(makeAnswer(marker, 'multiselect', values, 'seed', now()));
       }),
     );
   }
 
   // 3. RETENTION — the single global soft-delete/retention select (bank question).
-  if (!isAnswered(phase3State(current), RETENTION_DONE)) {
+  if (!isAnswered(phaseState(current), RETENTION_DONE)) {
     const q = phase3.seed.find((s) => s.id === RETENTION_DONE);
     if (q === undefined) {
       throw new Error('phase-3 bank is missing the retention question.');
@@ -196,25 +210,25 @@ export async function runPhase3(
       options: q.options ?? [],
     });
     current = save(
-      withPhase3(current, (next, ps) => {
+      withPhase(current, PHASE, (next, ps) => {
         ps.synthesisedObject = setRetention(readOutput(ps), value as Retention);
-        ps.answers.push(answer(RETENTION_DONE, 'select', value, 'seed', now()));
+        ps.answers.push(makeAnswer(RETENTION_DONE, 'select', value, 'seed', now()));
         if (q.mapsTo !== undefined) {
           const incoming: IncomingFact[] = [{ key: q.mapsTo, value, source: 'answer' }];
-          next.facts = mergeFacts(next.facts, incoming) as MustardSession['facts'];
+          applyFacts(next, incoming);
         }
       }),
     );
   }
 
   // 4. WRITE — render `03-SCHEMAS.md` (and only that), review, write, accept the phase.
-  if (!isAnswered(phase3State(current), WRITE_DONE)) {
+  if (!isAnswered(phaseState(current), WRITE_DONE)) {
     const artifacts = phase3.synthesis?.artifacts ?? [];
     const artifactName = artifacts[0];
     if (artifactName === undefined) {
       throw new Error('phase-3 bank declares no synthesis artifacts.');
     }
-    const output = readOutput(phase3State(current));
+    const output = readOutput(phaseState(current));
     const rendered = registry.render(artifactName, output, {
       phase: PHASE,
       sessionId: deriveSessionId(current),
@@ -237,12 +251,12 @@ export async function runPhase3(
     io.writeArtifact(rendered.name, body);
 
     current = save(
-      withPhase3(current, (next, ps) => {
+      withPhase(current, PHASE, (next, ps) => {
         ps.status = 'accepted';
         ps.acceptedAt = now();
         ps.artifactPaths = [...artifacts];
         ps.edited = edited;
-        ps.answers.push(answer(WRITE_DONE, 'confirm', true, 'derived', now()));
+        ps.answers.push(makeAnswer(WRITE_DONE, 'confirm', true, 'derived', now()));
         next.currentPhase = Math.max(next.currentPhase, PHASE + 1);
       }),
     );
@@ -255,22 +269,9 @@ export async function runPhase3(
 // Helpers
 // --------------------------------------------------------------------------
 
-function fileArtifactIO(): RunnerIO {
-  return {
-    writeArtifact(name, body) {
-      const dir = mustardDir();
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(join(dir, name), body, 'utf8');
-    },
-  };
-}
-
-function phase3State(session: MustardSession): PhaseState {
-  const ps = session.phases.find((p) => p.id === PHASE);
-  if (ps === undefined) {
-    throw new Error(`No PhaseState for phase ${PHASE} — runPhase3 should have created it.`);
-  }
-  return ps;
+/** Phase 3's state (throwing getter), phase-bound for the many call sites. */
+function phaseState(session: MustardSession): PhaseState {
+  return phaseStateOf(session, PHASE);
 }
 
 /** Read the confirmed Phase 2 extraction that Phase 3 derives its model from. */
@@ -288,49 +289,4 @@ function readOutput(ps: PhaseState): Phase3Output {
     throw new Error('Phase 3 model missing — the SEED step must run first.');
   }
   return Phase3Output.parse(ps.synthesisedObject);
-}
-
-function isAnswered(ps: PhaseState, questionId: string): boolean {
-  return ps.answers.some((a) => a.questionId === questionId);
-}
-
-function answer(
-  questionId: string,
-  type: Answer['type'],
-  value: Answer['value'],
-  source: Answer['source'],
-  askedAt: string,
-): Answer {
-  return { questionId, type, value, source, askedAt };
-}
-
-/** Split a free-text addition on commas or newlines into trimmed, non-empty items. */
-function splitList(raw: string): string[] {
-  return raw
-    .split(/[\n,]/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-}
-
-/** Clone the session, ensure phase 3 exists, run `mutate`, return the new session. */
-function withPhase3(
-  session: MustardSession,
-  mutate: (next: MustardSession, ps: PhaseState) => void,
-): MustardSession {
-  const next = structuredClone(session);
-  let ps = next.phases.find((p) => p.id === PHASE);
-  if (ps === undefined) {
-    ps = {
-      id: PHASE,
-      status: 'pending',
-      answers: [],
-      followUpsAsked: 0,
-      analysisRuns: 0,
-      artifactPaths: [],
-      edited: false,
-    };
-    next.phases.push(ps);
-  }
-  mutate(next, ps);
-  return next;
 }
