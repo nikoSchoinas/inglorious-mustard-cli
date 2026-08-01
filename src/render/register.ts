@@ -1,8 +1,11 @@
+import { Phase5Output } from '../schemas/architecture.js';
 import { ManifestoArtifact } from '../schemas/manifesto.js';
 import { Phase2Output } from '../schemas/phase2-output.js';
 import { Phase3Output } from '../schemas/schema-model.js';
 import { Phase4Output } from '../schemas/stack.js';
 import { renderAiLaws } from './markdown/ai-laws.js';
+import { renderArchitecture } from './markdown/architecture.js';
+import { renderDecisions } from './markdown/decisions.js';
 import { renderManifesto } from './markdown/manifesto.js';
 import { renderSchemas } from './markdown/schemas.js';
 import { renderStack } from './markdown/stack.js';
@@ -25,5 +28,8 @@ export function createRendererRegistry(): RendererRegistry {
     // Both Phase 4 artifacts render from the shared `Phase4Output`; each pulls its field.
     defineRenderer('04-STACK.md', Phase4Output, renderStack),
     defineRenderer('03-STRUCTURE.md', Phase4Output, renderStructure),
+    // Both Phase 5 artifacts render from the shared `Phase5Output`; each pulls its field.
+    defineRenderer('05-ARCHITECTURE.md', Phase5Output, renderArchitecture),
+    defineRenderer('05-DECISIONS.md', Phase5Output, renderDecisions),
   ]);
 }
