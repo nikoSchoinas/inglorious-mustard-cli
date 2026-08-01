@@ -7,12 +7,15 @@ import { LLMClient, type LLMClientOptions } from '../client.js';
 import { createModelForTier } from '../router.js';
 import { type LLMTransport, createTransport, modeFromEnv } from '../transport.js';
 import { createAnalyse } from './analyse.js';
+import { type ExplainStackFn, createExplainStack } from './explain-stack.js';
 import { type ExtractFn, createExtract } from './extract.js';
 import { type FailureQuestionsFn, createFailureQuestions } from './failure-questions.js';
 import { type FailureStructureFn, createFailureStructure } from './failure-structure.js';
 import { type HappyPathFn, createHappyPath } from './happy-path.js';
 import { type OrderUseCasesFn, createOrderUseCases } from './order-use-cases.js';
 import { type ProposeEnumValuesFn, createProposeEnumValues } from './propose-enum-values.js';
+import { type ProposeStackFn, createProposeStack } from './propose-stack.js';
+import { type ProposeStructureFn, createProposeStructure } from './propose-structure.js';
 import { type SuggestCapabilitiesFn, createSuggestCapabilities } from './suggest-capabilities.js';
 import { createSynthesise } from './synthesise.js';
 
@@ -41,6 +44,12 @@ export interface Passes {
   orderUseCases: OrderUseCasesFn;
   /** Phase 3 per-enum-attribute value-proposal pass (fast) — owned by `runPhase3`. */
   proposeEnumValues: ProposeEnumValuesFn;
+  /** Phase 4 stack-proposal pass (deep) — owned by `runPhase4`. */
+  proposeStack: ProposeStackFn;
+  /** Phase 4 "explain more" pass (fast) — owned by `runPhase4`. */
+  explainStack: ExplainStackFn;
+  /** Phase 4 folder-tree pass (fast) — owned by `runPhase4`. */
+  proposeStructure: ProposeStructureFn;
 }
 
 export interface BuildPassesOptions {
@@ -83,5 +92,8 @@ export function buildPasses(config: MustardConfig, opts: BuildPassesOptions = {}
     failureStructure: createFailureStructure({ client, model: fastModel }),
     orderUseCases: createOrderUseCases({ client, model: fastModel }),
     proposeEnumValues: createProposeEnumValues({ client, model: fastModel }),
+    proposeStack: createProposeStack({ client, model: deepModel }),
+    explainStack: createExplainStack({ client, model: fastModel }),
+    proposeStructure: createProposeStructure({ client, model: fastModel }),
   };
 }
