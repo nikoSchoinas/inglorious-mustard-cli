@@ -1,0 +1,39 @@
+{
+  "pass": "failure-questions",
+  "promptVersion": "1",
+  "schemaHash": "4b68730d5aefde5502aad046d2bda64d66843297268fe539b3cd6b5d7924589b",
+  "inputHash": "3449721267000377624e68e667b2b306e0a630d43325937f6f01611a99f0e45c",
+  "recordedInput": {
+    "phase": 2,
+    "literacy": "some",
+    "description": "A member opens the app, creates a habit they want to build like meditating every morning, and each day they check in to mark it done. Over time they look back at their streak to see how consistent they have been and stay motivated to continue.",
+    "useCase": {
+      "title": "check in habit",
+      "actor": "Member",
+      "happyPath": [
+        {
+          "actor": "user",
+          "action": "opens a habit and taps Done for today"
+        },
+        {
+          "actor": "system",
+          "action": "records the check-in"
+        },
+        {
+          "actor": "database",
+          "action": "saves the check-in"
+        }
+      ]
+    }
+  },
+  "response": [
+    {
+      "trigger": "double check-in",
+      "question": "What if they mark the same habit done twice today?"
+    },
+    {
+      "trigger": "offline",
+      "question": "What if they have no internet when they check in?"
+    }
+  ]
+}

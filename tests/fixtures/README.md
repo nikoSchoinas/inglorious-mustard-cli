@@ -9,9 +9,11 @@ wrong answer.
 ## Provenance
 
 `analyse/` and `synthesise-manifesto/` are **golden project #1** (the single-user
-habit tracker) for M6. They were generated deterministically from canned responses
-through the real record path (see `tests/golden/record.ts`) because no provider key
-was available at authoring time.
+habit tracker) for M6. `extract/` and `suggest-capabilities/` continue it for Phase
+2A (M8); `happy-path/`, `failure-questions/`, `failure-structure/` and
+`order-use-cases/` continue it for Phase 2B (M9). They were generated
+deterministically from canned responses through the real record path because no
+provider key was available at authoring time.
 
 To refresh them against a real provider (the intended Anthropic recording), run the
 mission with a key and `MUSTARD_LLM_MODE=record`. As long as the scripted answers,
@@ -22,5 +24,7 @@ else needs to change.
 Regenerate the seed fixtures with:
 
 ```
-npx tsx tests/golden/record.ts
+npx tsx tests/golden/record.ts          # M6  — analyse, synthesise-manifesto
+npx tsx tests/golden/record-phase2.ts   # M8  — extract, suggest-capabilities
+npx tsx tests/golden/record-phase2b.ts  # M9  — happy-path, failure-*, order-use-cases
 ```

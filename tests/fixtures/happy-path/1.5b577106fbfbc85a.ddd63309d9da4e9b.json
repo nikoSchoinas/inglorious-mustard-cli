@@ -1,0 +1,36 @@
+{
+  "pass": "happy-path",
+  "promptVersion": "1",
+  "schemaHash": "5b577106fbfbc85a2e88c17b0639225f8fe92404409c613ffabb1671973e5daf",
+  "inputHash": "ddd63309d9da4e9b92a874779ea859bb39f2e34ee54b7a2252dac6715570c826",
+  "recordedInput": {
+    "phase": 2,
+    "literacy": "some",
+    "description": "A member opens the app, creates a habit they want to build like meditating every morning, and each day they check in to mark it done. Over time they look back at their streak to see how consistent they have been and stay motivated to continue.",
+    "actor": {
+      "name": "Member",
+      "description": "Someone building a daily habit"
+    },
+    "useCase": {
+      "title": "create habit"
+    }
+  },
+  "response": [
+    {
+      "actor": "user",
+      "action": "taps New Habit and enters a name"
+    },
+    {
+      "actor": "system",
+      "action": "validates the name"
+    },
+    {
+      "actor": "database",
+      "action": "stores the new habit"
+    },
+    {
+      "actor": "user",
+      "action": "sees the habit in their list"
+    }
+  ]
+}

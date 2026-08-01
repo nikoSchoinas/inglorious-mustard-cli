@@ -1,0 +1,37 @@
+{
+  "pass": "failure-structure",
+  "promptVersion": "1",
+  "schemaHash": "1ee26c16ce6b4fb98e357424ca7c98e02c87e46a1e8145b3f8be9bcbf4887ddf",
+  "inputHash": "76654d20f9ce9fd7a3a69bb8a90ba4448a5e12957018cd27eb04b50033649da0",
+  "recordedInput": {
+    "phase": 2,
+    "literacy": "some",
+    "useCase": {
+      "title": "set a reminder"
+    },
+    "items": [
+      {
+        "trigger": "notification fails",
+        "question": "What if the reminder fails to send?",
+        "answer": "retry quietly"
+      },
+      {
+        "trigger": "past time",
+        "question": "What if they set a reminder for a time already gone?",
+        "answer": "start it tomorrow"
+      }
+    ]
+  },
+  "response": [
+    {
+      "trigger": "notification fails",
+      "systemResponse": "retry once, then log it",
+      "userVisible": "nothing — the reminder is best-effort"
+    },
+    {
+      "trigger": "past time",
+      "systemResponse": "schedule it for the next day",
+      "userVisible": "a note that the reminder starts tomorrow"
+    }
+  ]
+}

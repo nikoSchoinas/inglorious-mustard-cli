@@ -1,0 +1,25 @@
+{
+  "pass": "order-use-cases",
+  "promptVersion": "1",
+  "schemaHash": "2190d6662be33cc8404337fcfd79f46425dd7c264c108ca10f0817fe0bc3540f",
+  "inputHash": "6d71dc4d4ab156a78a218eafc7c78ea590ee1e0cee4d5127293e0d6a85c4be73",
+  "recordedInput": {
+    "phase": 2,
+    "literacy": "some",
+    "useCases": [
+      {
+        "title": "create habit",
+        "dependsOn": []
+      },
+      {
+        "title": "check in habit",
+        "dependsOn": []
+      },
+      {
+        "title": "set a reminder",
+        "dependsOn": []
+      }
+    ]
+  },
+  "response": ["create habit", "check in habit", "set a reminder"]
+}

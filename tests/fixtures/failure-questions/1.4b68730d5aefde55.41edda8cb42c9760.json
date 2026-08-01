@@ -1,0 +1,43 @@
+{
+  "pass": "failure-questions",
+  "promptVersion": "1",
+  "schemaHash": "4b68730d5aefde5502aad046d2bda64d66843297268fe539b3cd6b5d7924589b",
+  "inputHash": "41edda8cb42c97605ca7cd6df23d7980dac3451ce61469576bafe33c170ebbce",
+  "recordedInput": {
+    "phase": 2,
+    "literacy": "some",
+    "description": "A member opens the app, creates a habit they want to build like meditating every morning, and each day they check in to mark it done. Over time they look back at their streak to see how consistent they have been and stay motivated to continue.",
+    "useCase": {
+      "title": "create habit",
+      "actor": "Member",
+      "happyPath": [
+        {
+          "actor": "user",
+          "action": "taps New Habit and enters a name"
+        },
+        {
+          "actor": "system",
+          "action": "validates the name"
+        },
+        {
+          "actor": "database",
+          "action": "stores the new habit"
+        },
+        {
+          "actor": "user",
+          "action": "sees the habit in their list"
+        }
+      ]
+    }
+  },
+  "response": [
+    {
+      "trigger": "duplicate name",
+      "question": "What if they create a habit they already have?"
+    },
+    {
+      "trigger": "empty name",
+      "question": "What if they leave the habit name blank?"
+    }
+  ]
+}

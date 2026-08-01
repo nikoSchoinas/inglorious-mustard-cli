@@ -1,0 +1,37 @@
+{
+  "pass": "failure-structure",
+  "promptVersion": "1",
+  "schemaHash": "1ee26c16ce6b4fb98e357424ca7c98e02c87e46a1e8145b3f8be9bcbf4887ddf",
+  "inputHash": "4d0444006d822c8df213372df14ac7959503a0403145dede2996a217b31499cf",
+  "recordedInput": {
+    "phase": 2,
+    "literacy": "some",
+    "useCase": {
+      "title": "check in habit"
+    },
+    "items": [
+      {
+        "trigger": "double check-in",
+        "question": "What if they mark the same habit done twice today?",
+        "answer": "show it as already done"
+      },
+      {
+        "trigger": "offline",
+        "question": "What if they have no internet when they check in?",
+        "answer": "save it and sync later"
+      }
+    ]
+  },
+  "response": [
+    {
+      "trigger": "double check-in",
+      "systemResponse": "ignore the second check-in",
+      "userVisible": "the habit shown as already done today"
+    },
+    {
+      "trigger": "offline",
+      "systemResponse": "queue the check-in and sync later",
+      "userVisible": "a note that it will sync when back online"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "pass": "failure-questions",
+  "promptVersion": "1",
+  "schemaHash": "4b68730d5aefde5502aad046d2bda64d66843297268fe539b3cd6b5d7924589b",
+  "inputHash": "4df8a453477955992b34fc897940fd5e18f701ad69b4f114ac5b3a38781061bd",
+  "recordedInput": {
+    "phase": 2,
+    "literacy": "some",
+    "description": "A member opens the app, creates a habit they want to build like meditating every morning, and each day they check in to mark it done. Over time they look back at their streak to see how consistent they have been and stay motivated to continue.",
+    "useCase": {
+      "title": "set a reminder",
+      "actor": "Member",
+      "happyPath": [
+        {
+          "actor": "user",
+          "action": "opens a habit and sets a reminder time"
+        },
+        {
+          "actor": "system",
+          "action": "schedules the reminder"
+        },
+        {
+          "actor": "external",
+          "action": "sends a notification at the set time"
+        }
+      ]
+    }
+  },
+  "response": [
+    {
+      "trigger": "notification fails",
+      "question": "What if the reminder fails to send?"
+    },
+    {
+      "trigger": "past time",
+      "question": "What if they set a reminder for a time already gone?"
+    }
+  ]
+}

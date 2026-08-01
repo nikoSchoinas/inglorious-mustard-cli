@@ -1,0 +1,37 @@
+{
+  "pass": "failure-structure",
+  "promptVersion": "1",
+  "schemaHash": "1ee26c16ce6b4fb98e357424ca7c98e02c87e46a1e8145b3f8be9bcbf4887ddf",
+  "inputHash": "679614c3dc8ecfc267487b01df14464a1d1c3ab15129af57ee2c64acb8b64b4d",
+  "recordedInput": {
+    "phase": 2,
+    "literacy": "some",
+    "useCase": {
+      "title": "create habit"
+    },
+    "items": [
+      {
+        "trigger": "duplicate name",
+        "question": "What if they create a habit they already have?",
+        "answer": "show a message that it already exists"
+      },
+      {
+        "trigger": "empty name",
+        "question": "What if they leave the habit name blank?",
+        "answer": "ask them to enter a name"
+      }
+    ]
+  },
+  "response": [
+    {
+      "trigger": "duplicate name",
+      "systemResponse": "reject the duplicate",
+      "userVisible": "a message that the habit already exists"
+    },
+    {
+      "trigger": "empty name",
+      "systemResponse": "block the save",
+      "userVisible": "a validation error asking for a name"
+    }
+  ]
+}

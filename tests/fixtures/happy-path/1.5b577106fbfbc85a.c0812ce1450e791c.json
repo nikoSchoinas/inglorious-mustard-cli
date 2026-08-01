@@ -1,0 +1,32 @@
+{
+  "pass": "happy-path",
+  "promptVersion": "1",
+  "schemaHash": "5b577106fbfbc85a2e88c17b0639225f8fe92404409c613ffabb1671973e5daf",
+  "inputHash": "c0812ce1450e791c8a6d8c96ab7f3cf9d36eb37584a58c185f013e0753722833",
+  "recordedInput": {
+    "phase": 2,
+    "literacy": "some",
+    "description": "A member opens the app, creates a habit they want to build like meditating every morning, and each day they check in to mark it done. Over time they look back at their streak to see how consistent they have been and stay motivated to continue.",
+    "actor": {
+      "name": "Member",
+      "description": "Someone building a daily habit"
+    },
+    "useCase": {
+      "title": "check in habit"
+    }
+  },
+  "response": [
+    {
+      "actor": "user",
+      "action": "opens a habit and taps Done for today"
+    },
+    {
+      "actor": "system",
+      "action": "records the check-in"
+    },
+    {
+      "actor": "database",
+      "action": "saves the check-in"
+    }
+  ]
+}

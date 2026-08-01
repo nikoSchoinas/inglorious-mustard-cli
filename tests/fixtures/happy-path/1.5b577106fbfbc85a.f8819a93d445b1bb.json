@@ -1,0 +1,32 @@
+{
+  "pass": "happy-path",
+  "promptVersion": "1",
+  "schemaHash": "5b577106fbfbc85a2e88c17b0639225f8fe92404409c613ffabb1671973e5daf",
+  "inputHash": "f8819a93d445b1bb4818f239cf2f1d988cba1862f35aee5f9e4fe0decd3dab89",
+  "recordedInput": {
+    "phase": 2,
+    "literacy": "some",
+    "description": "A member opens the app, creates a habit they want to build like meditating every morning, and each day they check in to mark it done. Over time they look back at their streak to see how consistent they have been and stay motivated to continue.",
+    "actor": {
+      "name": "Member",
+      "description": "Someone building a daily habit"
+    },
+    "useCase": {
+      "title": "set a reminder"
+    }
+  },
+  "response": [
+    {
+      "actor": "user",
+      "action": "opens a habit and sets a reminder time"
+    },
+    {
+      "actor": "system",
+      "action": "schedules the reminder"
+    },
+    {
+      "actor": "external",
+      "action": "sends a notification at the set time"
+    }
+  ]
+}
