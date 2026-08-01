@@ -1,0 +1,20 @@
+{
+  "pass": "propose-enum-values",
+  "promptVersion": "1",
+  "schemaHash": "2190d6662be33cc8404337fcfd79f46425dd7c264c108ca10f0817fe0bc3540f",
+  "inputHash": "cf082d0471aeb00991a2c50537d0e9b0083e48dee84bbd9a3354eefa82d5b9c1",
+  "recordedInput": {
+    "phase": 3,
+    "literacy": "some",
+    "description": "",
+    "entity": {
+      "name": "Habit",
+      "description": "A habit being tracked"
+    },
+    "attribute": {
+      "name": "status",
+      "type": "string"
+    }
+  },
+  "response": ["active", "paused", "archived"]
+}

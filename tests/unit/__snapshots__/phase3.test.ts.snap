@@ -1,0 +1,51 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`runPhase3 — full replay run > snapshots the rendered 03-SCHEMAS.md 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 3
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: dece44b8f7d3
+---
+
+# Schemas
+
+## Models
+
+### Habit
+
+A habit being tracked
+
+| Attribute | Type | Required | Allowed values |
+| --- | --- | --- | --- |
+| title | string | Yes | — |
+| status | string | Yes | active, paused, completed |
+
+### CheckIn
+
+A daily completion record
+
+| Attribute | Type | Required | Allowed values |
+| --- | --- | --- | --- |
+| date | date | Yes | — |
+
+## Entity relationships
+
+\`\`\`mermaid
+erDiagram
+  Habit {
+    string title "required"
+    string status "required, enum"
+  }
+  CheckIn {
+    date date "required"
+  }
+  Habit ||--o{ CheckIn : "relates to"
+\`\`\`
+
+## Data retention
+
+Deleted records are recoverable (soft delete — kept and restorable).
+"
+`;
