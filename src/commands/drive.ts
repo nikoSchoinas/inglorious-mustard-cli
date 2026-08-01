@@ -3,6 +3,7 @@ import { fileArtifactIO } from '../engine/orchestrator.js';
 import { type RunPhase2ADeps, runPhase2A as realRunPhase2A } from '../engine/phase-2a.js';
 import { type RunPhase2BDeps, runPhase2B as realRunPhase2B } from '../engine/phase-2b.js';
 import { type RunPhase3Deps, runPhase3 as realRunPhase3 } from '../engine/phase-3.js';
+import { type RunPhase4Deps, runPhase4 as realRunPhase4 } from '../engine/phase-4.js';
 import type { AnalyseFn, RunnerIO, SynthesiseFn } from '../engine/runner.js';
 import { runPhase } from '../engine/runner.js';
 import { saveSession } from '../engine/session.js';
@@ -26,7 +27,8 @@ import { runSetup } from './setup.js';
  * persisted `PhaseState`, so a resumed run skips accepted phases and the setup step
  * reuses a matching config — the walking skeleton (technical-plan §4).
  *
- * M6 tops out at Phase 1; later milestones extend the phase list here.
+ * The driver runs Phase 0 → 0.5 setup → Phases 1–4; later milestones extend the
+ * phase list here.
  */
 
 const PROVIDERS = ['anthropic', 'openai', 'google', 'ollama'] as const;
@@ -55,6 +57,8 @@ export interface MissionDeps {
   runPhase2B?: (session: MustardSession, deps: RunPhase2BDeps) => Promise<MustardSession>;
   /** Phase 3 orchestrator (M10). Injectable so tests can stub it. */
   runPhase3?: (session: MustardSession, deps: RunPhase3Deps) => Promise<MustardSession>;
+  /** Phase 4 orchestrator (M11). Injectable so tests can stub it. */
+  runPhase4?: (session: MustardSession, deps: RunPhase4Deps) => Promise<MustardSession>;
   setup?: (provider: Provider, deps: SetupDeps) => Promise<SetupResult>;
   // Passed through to the setup step:
   transport?: LLMTransport;
@@ -74,6 +78,7 @@ export async function driveMission(
   const runPhase2A = deps.runPhase2A ?? realRunPhase2A;
   const runPhase2B = deps.runPhase2B ?? realRunPhase2B;
   const runPhase3 = deps.runPhase3 ?? realRunPhase3;
+  const runPhase4 = deps.runPhase4 ?? realRunPhase4;
   const setup = deps.setup ?? runSetup;
 
   // Phase 0 has no synthesis, so these are never called; guard loudly if they are.
@@ -187,6 +192,25 @@ export async function driveMission(
     current = await runPhase3(current, {
       prompter: deps.prompter,
       proposeEnumValues: passes.proposeEnumValues,
+      io,
+      editor: deps.editor,
+      now,
+      save,
+    });
+    current = save(syncSessionIdentity(current));
+  }
+
+  // Phase 4 — Tools & Technologies (M11): ask the business questions, propose the
+  // stack one decision at a time, then render `04-STACK.md` and the deferred
+  // `03-STRUCTURE.md` against the accepted stack. A bespoke orchestrator, not
+  // `runPhase` (§8.7 doesn't fit the generic machine). Idempotent.
+  if (!isAccepted(current, 4)) {
+    warnStaleEdits(4);
+    current = await runPhase4(current, {
+      prompter: deps.prompter,
+      proposeStack: passes.proposeStack,
+      explainStack: passes.explainStack,
+      proposeStructure: passes.proposeStructure,
       io,
       editor: deps.editor,
       now,
