@@ -4,6 +4,7 @@
  * input and fixture format. Nothing here may change without a `schemaVersion` bump.
  */
 export * from './analysis.js';
+export * from './architecture.js';
 export * from './config.js';
 export * from './extraction.js';
 export * from './manifesto.js';
