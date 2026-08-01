@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { syncSessionIdentity } from '../engine/identity.js';
 import { type RunPhase2ADeps, runPhase2A as realRunPhase2A } from '../engine/phase-2a.js';
 import { type RunPhase2BDeps, runPhase2B as realRunPhase2B } from '../engine/phase-2b.js';
+import { type RunPhase3Deps, runPhase3 as realRunPhase3 } from '../engine/phase-3.js';
 import type { AnalyseFn, RunnerIO, SynthesiseFn } from '../engine/runner.js';
 import { runPhase } from '../engine/runner.js';
 import { mustardDir, saveSession } from '../engine/session.js';
@@ -53,6 +54,8 @@ export interface MissionDeps {
   runPhase2A?: (session: MustardSession, deps: RunPhase2ADeps) => Promise<MustardSession>;
   /** Phase 2B orchestrator (M9). Injectable so tests can stub it. */
   runPhase2B?: (session: MustardSession, deps: RunPhase2BDeps) => Promise<MustardSession>;
+  /** Phase 3 orchestrator (M10). Injectable so tests can stub it. */
+  runPhase3?: (session: MustardSession, deps: RunPhase3Deps) => Promise<MustardSession>;
   setup?: (provider: Provider, deps: SetupDeps) => Promise<SetupResult>;
   // Passed through to the setup step:
   transport?: LLMTransport;
@@ -71,6 +74,7 @@ export async function driveMission(
   const buildPasses = deps.buildPasses ?? realBuildPasses;
   const runPhase2A = deps.runPhase2A ?? realRunPhase2A;
   const runPhase2B = deps.runPhase2B ?? realRunPhase2B;
+  const runPhase3 = deps.runPhase3 ?? realRunPhase3;
   const setup = deps.setup ?? runSetup;
 
   // Phase 0 has no synthesis, so these are never called; guard loudly if they are.
@@ -148,6 +152,23 @@ export async function driveMission(
       failureQuestions: passes.failureQuestions,
       failureStructure: passes.failureStructure,
       orderUseCases: passes.orderUseCases,
+      io,
+      editor: deps.editor,
+      now,
+      save,
+    });
+    current = save(syncSessionIdentity(current));
+  }
+
+  // Phase 3 — Structure & Schemas (M10): derive the data model from the Phase 2
+  // entities, disambiguate ambiguous cardinality, discover enum values, pick a
+  // retention policy → `03-SCHEMAS.md`. A bespoke orchestrator, not `runPhase`
+  // (§8.6 doesn't fit the generic machine). Emits `03-SCHEMAS.md` only —
+  // `03-STRUCTURE.md` is a Phase 4 artifact (pitfall §7.1). Idempotent.
+  if (!isAccepted(current, 3)) {
+    current = await runPhase3(current, {
+      prompter: deps.prompter,
+      proposeEnumValues: passes.proposeEnumValues,
       io,
       editor: deps.editor,
       now,
