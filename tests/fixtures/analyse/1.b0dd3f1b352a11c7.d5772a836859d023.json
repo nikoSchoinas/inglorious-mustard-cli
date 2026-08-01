@@ -1,0 +1,35 @@
+{
+  "pass": "analyse",
+  "promptVersion": "1",
+  "schemaHash": "b0dd3f1b352a11c7c9aa7202444359501c0095017ad89ffd02798328823a1331",
+  "inputHash": "d5772a836859d023c486aec6051586e74ee0604b4a77d28a3e262595215ce588",
+  "recordedInput": {
+    "phase": 1,
+    "phaseName": "Manifesto",
+    "literacy": "some",
+    "answers": [
+      {
+        "id": "p1.why",
+        "value": "People who want to build a daily habit have nowhere simple and private to track it. Existing apps are bloated, ad-ridden, or sell your data. Someone trying to meditate or run every morning is worse off because the friction of heavy tools makes them quit before the habit sticks."
+      },
+      {
+        "id": "p1.name",
+        "value": "Habit Tracker"
+      },
+      {
+        "id": "p1.rules",
+        "value": ["stay-true-to-users", "ship-before-perfect", "document-or-it-didnt-happen"]
+      },
+      {
+        "id": "p1.machine-rules",
+        "value": ["tests-alongside-features", "no-new-dependency-without-asking"]
+      }
+    ]
+  },
+  "response": {
+    "gaps": [],
+    "contradictions": [],
+    "derivedFacts": [],
+    "readyToSynthesise": true
+  }
+}

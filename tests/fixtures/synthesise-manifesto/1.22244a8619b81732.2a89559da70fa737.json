@@ -1,0 +1,62 @@
+{
+  "pass": "synthesise-manifesto",
+  "promptVersion": "1",
+  "schemaHash": "22244a8619b817326368655de362b6af144b56881d829b4fea472c0ee6091887",
+  "inputHash": "2a89559da70fa737aaddc3c8467f0ed1cd82d9afda804ed6bbe8697772661889",
+  "recordedInput": {
+    "phase": 1,
+    "literacy": "some",
+    "answers": [
+      {
+        "id": "p1.why",
+        "value": "People who want to build a daily habit have nowhere simple and private to track it. Existing apps are bloated, ad-ridden, or sell your data. Someone trying to meditate or run every morning is worse off because the friction of heavy tools makes them quit before the habit sticks."
+      },
+      {
+        "id": "p1.name",
+        "value": "Habit Tracker"
+      },
+      {
+        "id": "p1.rules",
+        "value": ["stay-true-to-users", "ship-before-perfect", "document-or-it-didnt-happen"]
+      },
+      {
+        "id": "p1.machine-rules",
+        "value": ["tests-alongside-features", "no-new-dependency-without-asking"]
+      }
+    ],
+    "steering": null
+  },
+  "response": {
+    "projectName": "Habit Tracker",
+    "mission": "Habit Tracker gives one person a simple, private place to build a daily habit — no ads, no accounts, no data harvesting — so the tool never becomes the reason they quit.",
+    "values": [
+      {
+        "title": "Stay true to your users",
+        "rationale": "Every feature serves the person building a habit, not a growth metric."
+      },
+      {
+        "title": "Ship before perfect",
+        "rationale": "A working daily streak beats a beautiful unfinished dashboard."
+      },
+      {
+        "title": "Document it or it doesn't exist",
+        "rationale": "If a behaviour is not written down, the next change will break it."
+      },
+      {
+        "title": "Keep it private by default",
+        "rationale": "A habit is personal; data stays on the user's device unless they ask otherwise."
+      },
+      {
+        "title": "Reduce friction relentlessly",
+        "rationale": "Every extra tap is a reason to skip a day."
+      }
+    ],
+    "aiLaws": [
+      "Write tests alongside every feature.",
+      "Never add a dependency without asking first.",
+      "Keep user data local unless the user explicitly opts in to sync.",
+      "Fail loudly and visibly; never swallow an error.",
+      "Prefer the simplest implementation that satisfies the acceptance criteria."
+    ]
+  }
+}

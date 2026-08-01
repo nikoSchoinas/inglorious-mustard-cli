@@ -1,0 +1,12 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`M6 walking skeleton — status > reports phase progress after a completed run 1`] = `
+"Mission: Habit Tracker
+Literacy: some   Agent: claude-code
+
+Phases:
+  0. Recon — done (4 answers)
+  1. Manifesto — done (4 answers, 2 artifacts)
+
+Tasks: 0/0 done"
+`;
