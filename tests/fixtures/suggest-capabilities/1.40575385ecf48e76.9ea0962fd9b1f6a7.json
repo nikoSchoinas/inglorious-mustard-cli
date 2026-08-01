@@ -1,0 +1,27 @@
+{
+  "pass": "suggest-capabilities",
+  "promptVersion": "1",
+  "schemaHash": "40575385ecf48e76ba00355d21b4ea41a6c6aeba68888bd8e01a7bc5355600d8",
+  "inputHash": "9ea0962fd9b1f6a7b0a7a32e19ac399ef1f41e8a41343c913c3776427ba6e21f",
+  "recordedInput": {
+    "phase": 2,
+    "literacy": "some",
+    "description": "A member opens the app, creates a habit they want to build like meditating every morning, and each day they check in to mark it done. Over time they look back at their streak to see how consistent they have been and stay motivated to continue.",
+    "actor": {
+      "name": "Member",
+      "description": "Someone building a daily habit"
+    }
+  },
+  "response": [
+    {
+      "verb": "create",
+      "object": "habit",
+      "description": "start tracking a new habit"
+    },
+    {
+      "verb": "check in",
+      "object": "habit",
+      "description": "mark a habit done for the day"
+    }
+  ]
+}

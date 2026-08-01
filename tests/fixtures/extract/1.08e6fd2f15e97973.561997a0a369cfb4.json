@@ -1,0 +1,72 @@
+{
+  "pass": "extract",
+  "promptVersion": "1",
+  "schemaHash": "08e6fd2f15e9797388b1748b6b3cfcf29f0b3380be5b09a31f20350d73f6f6cb",
+  "inputHash": "561997a0a369cfb41ba18b2cfe5957961341d26919e9c174b9d02abff78e9a80",
+  "recordedInput": {
+    "phase": 2,
+    "literacy": "some",
+    "description": "A member opens the app, creates a habit they want to build like meditating every morning, and each day they check in to mark it done. Over time they look back at their streak to see how consistent they have been and stay motivated to continue."
+  },
+  "response": {
+    "actors": [
+      {
+        "id": "a1",
+        "name": "Member",
+        "description": "Someone building a daily habit",
+        "isPrimary": true
+      },
+      {
+        "id": "a2",
+        "name": "Coach",
+        "description": "Someone reviewing a member's progress",
+        "isPrimary": false
+      }
+    ],
+    "entities": [
+      {
+        "id": "e1",
+        "name": "Habit",
+        "description": "A habit being tracked",
+        "attributes": [
+          {
+            "name": "title",
+            "type": "string",
+            "required": true,
+            "isEnum": false
+          }
+        ],
+        "relationships": [
+          {
+            "toEntityId": "e2",
+            "cardinality": "one_to_many",
+            "confidence": "high"
+          }
+        ]
+      },
+      {
+        "id": "e2",
+        "name": "CheckIn",
+        "description": "A daily completion record",
+        "attributes": [
+          {
+            "name": "date",
+            "type": "date",
+            "required": true,
+            "isEnum": false
+          }
+        ],
+        "relationships": []
+      }
+    ],
+    "capabilities": [
+      {
+        "id": "c1",
+        "actorId": "a1",
+        "verb": "create",
+        "object": "Habit",
+        "description": "add a habit to track"
+      }
+    ]
+  }
+}
