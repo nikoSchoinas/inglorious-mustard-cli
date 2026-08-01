@@ -70,7 +70,6 @@ describe('session schemas', () => {
       agentTarget: 'undecided',
       currentPhase: 0,
       phases: [],
-      ledger: [],
       createdAt: '2026-07-31T10:00:00.000Z',
       updatedAt: '2026-07-31T10:00:00.000Z',
     });
@@ -92,7 +91,6 @@ describe('pass-contract schemas', () => {
       category: 'database' as const,
       choice: 'Postgres',
       justification: 'It is the boring, well-documented default.',
-      monthlyCostUsd: { low: 0, high: 5, assumptions: 'hobby scale' },
     };
     const two = [
       { name: 'SQLite', tradeoff: 'no network access' },
@@ -158,25 +156,16 @@ describe('config schema', () => {
       provider: 'anthropic',
       models: { fast: 'a-fast-id', deep: 'a-deep-id' },
       apiKeySource: 'env',
-      maxSessionUsd: 5,
     });
     expect(config.telemetry).toBe(false);
   });
 
-  it('rejects empty model ids and non-positive budgets', () => {
+  it('rejects empty model ids', () => {
     expect(
       MustardConfig.safeParse({
         provider: 'anthropic',
         models: { fast: '', deep: 'x' },
         apiKeySource: 'env',
-      }).success,
-    ).toBe(false);
-    expect(
-      MustardConfig.safeParse({
-        provider: 'anthropic',
-        models: { fast: 'x', deep: 'y' },
-        apiKeySource: 'env',
-        maxSessionUsd: 0,
       }).success,
     ).toBe(false);
   });

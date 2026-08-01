@@ -30,17 +30,6 @@ export function makeSession(overrides: Partial<MustardSession> = {}): MustardSes
         artifactPaths: [],
       },
     ],
-    ledger: [
-      {
-        phase: 1,
-        pass: 'analyse',
-        model: 'fast-model',
-        inputTokens: 1200,
-        outputTokens: 300,
-        estimatedUsd: 0.002,
-        at: '2026-07-31T10:01:00.000Z',
-      },
-    ],
     facts: { 'facts.actorCount': 1 },
     tasks: [],
     createdAt: '2026-07-31T10:00:00.000Z',

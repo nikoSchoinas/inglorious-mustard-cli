@@ -10,16 +10,7 @@ const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.ur
 
 const entry = fileURLToPath(new URL('../../src/index.ts', import.meta.url));
 
-const EXPECTED_COMMANDS = [
-  'init',
-  'resume',
-  'status',
-  'phase',
-  'prompts',
-  'export',
-  'config',
-  'cost',
-];
+const EXPECTED_COMMANDS = ['init', 'resume', 'status', 'phase', 'prompts', 'export', 'config'];
 
 describe('cli scaffold', () => {
   it('reports the package version', () => {
