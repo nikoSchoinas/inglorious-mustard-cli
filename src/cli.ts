@@ -1,20 +1,13 @@
-import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
 import { PRODUCT_NAME, SLOGAN } from './branding.js';
 import { buildConfigCommand } from './commands/config.js';
+import { runInit } from './commands/init.js';
+import { runResume } from './commands/resume.js';
+import { runStatus } from './commands/status.js';
+import { configureColor } from './ui/color.js';
+import { readVersion } from './version.js';
 
-/**
- * Read the package version at runtime. Resolving relative to `import.meta.url`
- * works both from `src/` under tsx and from `dist/` after `tsc`, and avoids
- * JSON import-attribute friction across Node/bundler targets.
- */
-function readVersion(): string {
-  const pkgUrl = new URL('../package.json', import.meta.url);
-  const pkg = JSON.parse(readFileSync(pkgUrl, 'utf8')) as { version: string };
-  return pkg.version;
-}
-
-/** Every subcommand is a stub in M0 — real behaviour arrives in later milestones. */
+/** Subcommands still awaiting their milestone print a placeholder. */
 function notYetImplemented(name: string): void {
   console.log(`\`mustard ${name}\` is not yet implemented.`);
 }
@@ -31,27 +24,41 @@ export function buildProgram(): Command {
     .description(`${PRODUCT_NAME} — ${SLOGAN}`)
     .version(readVersion(), '-v, --version', 'output the current version');
 
-  // Global flags (declared now; wired to behaviour in later milestones).
+  // Global flags. `--json` / `--dry-run` are wired to behaviour in M14; `--no-color`
+  // is honoured now via `configureColor` in the preAction hook below.
   program
     .option('--no-color', 'disable coloured output')
     .option('--json', 'machine-readable output')
     .option('--dry-run', 'run the interrogation, write nothing');
 
+  // Commander sets `color: false` when `--no-color` is passed. Apply it before any
+  // command action runs, so every `pc.*` call downstream respects the choice.
+  program.hook('preAction', (thisCommand) => {
+    const opts = thisCommand.opts<{ color?: boolean }>();
+    configureColor(opts.color === false);
+  });
+
   program
     .command('init')
     .description('Start a mission: create mustard/ and run Phase 0.')
-    .action(() => notYetImplemented('init'));
+    .action(async () => {
+      await runInit();
+    });
 
   program
     .command('resume')
     .description('Continue from the exact question where the session stopped.')
-    .action(() => notYetImplemented('resume'));
+    .action(async () => {
+      await runResume();
+    });
 
   program
     .command('status')
     .alias('sitrep')
     .description('Phase progress, tasks done/total.')
-    .action(() => notYetImplemented('status'));
+    .action(async () => {
+      await runStatus();
+    });
 
   program
     .command('phase')
