@@ -4,6 +4,7 @@ import { type RunPhase2ADeps, runPhase2A as realRunPhase2A } from '../engine/pha
 import { type RunPhase2BDeps, runPhase2B as realRunPhase2B } from '../engine/phase-2b.js';
 import { type RunPhase3Deps, runPhase3 as realRunPhase3 } from '../engine/phase-3.js';
 import { type RunPhase4Deps, runPhase4 as realRunPhase4 } from '../engine/phase-4.js';
+import { type RunPhase5Deps, runPhase5 as realRunPhase5 } from '../engine/phase-5.js';
 import type { AnalyseFn, RunnerIO, SynthesiseFn } from '../engine/runner.js';
 import { runPhase } from '../engine/runner.js';
 import { saveSession } from '../engine/session.js';
@@ -27,7 +28,7 @@ import { runSetup } from './setup.js';
  * persisted `PhaseState`, so a resumed run skips accepted phases and the setup step
  * reuses a matching config — the walking skeleton (technical-plan §4).
  *
- * The driver runs Phase 0 → 0.5 setup → Phases 1–4; later milestones extend the
+ * The driver runs Phase 0 → 0.5 setup → Phases 1–5; later milestones extend the
  * phase list here.
  */
 
@@ -59,6 +60,8 @@ export interface MissionDeps {
   runPhase3?: (session: MustardSession, deps: RunPhase3Deps) => Promise<MustardSession>;
   /** Phase 4 orchestrator (M11). Injectable so tests can stub it. */
   runPhase4?: (session: MustardSession, deps: RunPhase4Deps) => Promise<MustardSession>;
+  /** Phase 5 orchestrator (M12). Injectable so tests can stub it. */
+  runPhase5?: (session: MustardSession, deps: RunPhase5Deps) => Promise<MustardSession>;
   setup?: (provider: Provider, deps: SetupDeps) => Promise<SetupResult>;
   // Passed through to the setup step:
   transport?: LLMTransport;
@@ -79,6 +82,7 @@ export async function driveMission(
   const runPhase2B = deps.runPhase2B ?? realRunPhase2B;
   const runPhase3 = deps.runPhase3 ?? realRunPhase3;
   const runPhase4 = deps.runPhase4 ?? realRunPhase4;
+  const runPhase5 = deps.runPhase5 ?? realRunPhase5;
   const setup = deps.setup ?? runSetup;
 
   // Phase 0 has no synthesis, so these are never called; guard loudly if they are.
@@ -211,6 +215,25 @@ export async function driveMission(
       proposeStack: passes.proposeStack,
       explainStack: passes.explainStack,
       proposeStructure: passes.proposeStructure,
+      io,
+      editor: deps.editor,
+      now,
+      save,
+    });
+    current = save(syncSessionIdentity(current));
+  }
+
+  // Phase 5 — Architecture (M12): ask the two derived questions, synthesise the
+  // component diagram + riskiest sequence diagrams + ADR log + the three
+  // irreversible decisions, confirm each at the non-blocking irreversibility gate,
+  // then render `05-ARCHITECTURE.md` and `05-DECISIONS.md`. A bespoke orchestrator,
+  // not `runPhase` (§8.8 doesn't fit the generic machine). Idempotent.
+  if (!isAccepted(current, 5)) {
+    warnStaleEdits(5);
+    current = await runPhase5(current, {
+      prompter: deps.prompter,
+      analyse: passes.analyse,
+      synthesiseArchitecture: passes.synthesiseArchitecture,
       io,
       editor: deps.editor,
       now,
