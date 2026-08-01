@@ -1,0 +1,85 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`runPhase4 — full replay run > snapshots 04-STACK.md and 03-STRUCTURE.md 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 4
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: dece44b8f7d3
+---
+
+# Stack
+
+## At a glance
+
+| Component | Choice | Decided |
+| --- | --- | --- |
+| frontend | Next.js | MUSTARD |
+| database | PostgreSQL | MUSTARD |
+| storage | Cloudflare R2 | MUSTARD |
+| auth | Auth0 | You (locked) |
+
+## frontend: Next.js
+
+Next.js gives you a single well-trodden framework for the screens and the server bits, which is exactly what a habit tracker on the web needs.
+
+**Alternatives considered**
+
+- **Remix** — Great data handling, smaller ecosystem.
+- **SvelteKit** — Lighter to write, fewer hired hands know it.
+
+## database: PostgreSQL
+
+A rock-solid relational database that fits the Habit and CheckIn tables cleanly and scales well past your first hundreds of users.
+
+**Alternatives considered**
+
+- **SQLite** — Zero setup, awkward once you have many writers.
+- **MySQL** — Also solid, slightly weaker JSON support.
+
+## storage: Cloudflare R2
+
+Because people upload files, you need somewhere durable to keep them; S3 is the default the whole ecosystem is built around.
+
+**Alternatives considered**
+
+- **Cloudflare R2** — No egress fees, newer tooling.
+- **Supabase Storage** — Bundled with the DB, less control.
+
+## auth: Auth0
+
+_You already decided this — it is locked and will survive any redo._
+
+A hosted sign-in service so you do not hand-roll password security; drops into a Next.js app in an afternoon.
+
+**Alternatives considered**
+
+- **Auth.js** — Free and flexible, more wiring to do.
+- **Supabase Auth** — Bundled with the DB, less polished UI.
+"
+`;
+
+exports[`runPhase4 — full replay run > snapshots 04-STACK.md and 03-STRUCTURE.md 2`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 4
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: dece44b8f7d3
+---
+
+# Structure
+
+Proposed starting layout for a fresh repository built on the accepted stack.
+
+\`\`\`text
+├── src/  # Application code
+│   ├── app/  # Next.js routes and pages
+│   ├── models/  # Habit and CheckIn data models
+│   └── lib/  # Database and storage clients
+├── package.json
+└── README.md
+\`\`\`
+"
+`;

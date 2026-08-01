@@ -75,6 +75,8 @@ async function driveToPhase3(session: MustardSession): Promise<ScriptedPrompter>
       phases: [...s.phases, acceptedPhase(3, { artifactPaths: ['03-SCHEMAS.md'] })],
       currentPhase: 4,
     }),
+    // Stub Phase 4 too, so the driver reaches the end without a real interrogation.
+    runPhase4: async (s) => s,
   });
   return prompter;
 }

@@ -1,0 +1,41 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderStack > snapshots 04-STACK.md with a locked decision and hostile cell 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 4
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: testsession01
+---
+
+# Stack
+
+## At a glance
+
+| Component | Choice | Decided |
+| --- | --- | --- |
+| frontend | Next.js | MUSTARD |
+| auth | Home \\| grown auth | You (locked) |
+
+## frontend: Next.js
+
+One framework for screens and server.
+
+**Alternatives considered**
+
+- **Remix** — Great data handling, smaller ecosystem.
+- **SvelteKit** — Lighter, less known.
+
+## auth: Home | grown auth
+
+_You already decided this — it is locked and will survive any redo._
+
+Overridden by the user.
+
+**Alternatives considered**
+
+- **Clerk** — Hosted, quick.
+- **Auth.js** — Free, more wiring.
+"
+`;

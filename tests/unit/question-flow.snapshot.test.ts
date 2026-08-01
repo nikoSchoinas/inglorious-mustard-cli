@@ -3,6 +3,7 @@ import { phase0 } from '../../src/questions/bank/phase-0.js';
 import { phase1 } from '../../src/questions/bank/phase-1.js';
 import { phase2 } from '../../src/questions/bank/phase-2.js';
 import { phase3 } from '../../src/questions/bank/phase-3.js';
+import { phase4 } from '../../src/questions/bank/phase-4.js';
 import { renderQuestionFlow } from '../../src/questions/index.js';
 import type { Facts, Literacy } from '../../src/questions/types.js';
 
@@ -57,4 +58,23 @@ describe('rendered question flow per literacy register', () => {
       expect(renderQuestionFlow(phase3, literacy, {})).toMatchSnapshot();
     });
   }
+
+  // Phase 4 is proposal mode: the ten business questions + four context selects are all
+  // bank questions. `actorCount > 1` so the conditional `p4.concurrent` question shows.
+  const phase4Facts: Facts = { actorCount: 2 };
+  for (const literacy of LITERACIES) {
+    it(`phase 4 — ${literacy}`, () => {
+      expect(renderQuestionFlow(phase4, literacy, phase4Facts)).toMatchSnapshot();
+    });
+  }
+
+  it('phase 4 hides the concurrency question for a single-actor product', () => {
+    const flow = renderQuestionFlow(phase4, 'none', { actorCount: 1 });
+    expect(flow.questions.map((q) => q.id)).not.toContain('p4.concurrent');
+  });
+
+  it('phase 4 shows the concurrency question when more than one actor exists', () => {
+    const flow = renderQuestionFlow(phase4, 'none', { actorCount: 2 });
+    expect(flow.questions.map((q) => q.id)).toContain('p4.concurrent');
+  });
 });

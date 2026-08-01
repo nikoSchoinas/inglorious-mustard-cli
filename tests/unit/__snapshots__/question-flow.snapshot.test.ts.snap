@@ -914,3 +914,606 @@ exports[`rendered question flow per literacy register > phase 3 — some 1`] = `
   ],
 }
 `;
+
+exports[`rendered question flow per literacy register > phase 4 — developer 1`] = `
+{
+  "literacy": "developer",
+  "phase": 4,
+  "questions": [
+    {
+      "id": "p4.run-target",
+      "options": [
+        {
+          "label": "In a web browser",
+          "value": "web",
+        },
+        {
+          "label": "As a phone app",
+          "value": "mobile",
+        },
+        {
+          "label": "Both web and phone",
+          "value": "both",
+        },
+        {
+          "label": "As a desktop app",
+          "value": "desktop",
+        },
+        {
+          "label": "From the command line",
+          "value": "cli",
+        },
+        {
+          "label": "It's an API — no screens of its own",
+          "value": "api",
+        },
+      ],
+      "prompt": "Primary run target?",
+      "type": "select",
+    },
+    {
+      "id": "p4.scale",
+      "options": [
+        {
+          "label": "Just me",
+          "value": "just-me",
+        },
+        {
+          "label": "Tens of people",
+          "value": "tens",
+        },
+        {
+          "label": "Hundreds",
+          "value": "hundreds",
+        },
+        {
+          "label": "Thousands",
+          "value": "thousands",
+        },
+        {
+          "label": "More than that",
+          "value": "more",
+        },
+      ],
+      "prompt": "Year-one scale?",
+      "type": "select",
+    },
+    {
+      "help": "Regulated means health, finance, or anything about children.",
+      "id": "p4.sensitivity",
+      "options": [
+        {
+          "label": "Nothing private — public information only",
+          "value": "public",
+        },
+        {
+          "label": "Personal details (names, emails, their own content)",
+          "value": "personal",
+        },
+        {
+          "label": "Regulated data (health, finance, or children)",
+          "value": "regulated",
+        },
+      ],
+      "prompt": "Data sensitivity class?",
+      "type": "select",
+    },
+    {
+      "help": "This affects speed and where data is allowed to live.",
+      "id": "p4.user-location",
+      "options": [
+        {
+          "label": "Mostly one country",
+          "value": "one-country",
+        },
+        {
+          "label": "One region (e.g. Europe, North America)",
+          "value": "one-region",
+        },
+        {
+          "label": "All over the world",
+          "value": "global",
+        },
+      ],
+      "prompt": "User geography?",
+      "type": "select",
+    },
+    {
+      "help": "Profile pictures count. So do PDFs, voice notes, and CSV imports.",
+      "id": "p4.uploads",
+      "prompt": "User-generated file uploads?",
+      "type": "confirm",
+    },
+    {
+      "id": "p4.concurrent",
+      "options": [
+        {
+          "label": "No — everyone has their own stuff",
+          "value": "never",
+        },
+        {
+          "label": "Sometimes — e.g. shared documents or bookings",
+          "value": "sometimes",
+        },
+        {
+          "label": "Constantly — it's the point of the product",
+          "value": "core",
+        },
+      ],
+      "prompt": "Concurrent write contention on shared records?",
+      "type": "select",
+    },
+    {
+      "help": "Subscriptions, one-off purchases, or paying other users all count.",
+      "id": "p4.payments",
+      "prompt": "Payment processing at runtime?",
+      "type": "confirm",
+    },
+    {
+      "help": "Password resets, receipts, reminders, "someone replied" alerts.",
+      "id": "p4.email",
+      "prompt": "Transactional email / push notifications?",
+      "type": "confirm",
+    },
+    {
+      "help": "Daily digests, cleanups, reminders that fire on their own, imports that run overnight.",
+      "id": "p4.background",
+      "prompt": "Background workers / scheduled jobs?",
+      "type": "confirm",
+    },
+    {
+      "help": "Chatbots, summaries, image generation, smart search — anything that asks an AI model a question live.",
+      "id": "p4.inference",
+      "prompt": "Runtime model inference?",
+      "type": "confirm",
+    },
+    {
+      "id": "p4.auth",
+      "options": [
+        {
+          "label": "No sign-in at all",
+          "value": "none",
+        },
+        {
+          "label": "Email and password",
+          "value": "email-password",
+        },
+        {
+          "label": "A login link sent to their email",
+          "value": "magic-link",
+        },
+        {
+          "label": "Sign in with Google / Apple / etc.",
+          "value": "social",
+        },
+        {
+          "label": "Both a password and social sign-in",
+          "value": "both",
+        },
+      ],
+      "prompt": "Auth model?",
+      "type": "select",
+    },
+    {
+      "help": "Think a note-taking app on a plane, or a field-work app with no signal.",
+      "id": "p4.offline",
+      "prompt": "Offline-first / sync?",
+      "type": "confirm",
+    },
+    {
+      "help": "A search box that looks inside what users have created, not just filtering a short list.",
+      "id": "p4.search",
+      "prompt": "Full-text search over content?",
+      "type": "confirm",
+    },
+    {
+      "help": "A back office to ban a user, remove a post, or fix bad data.",
+      "id": "p4.admin",
+      "prompt": "Admin / moderation surface with roles?",
+      "type": "confirm",
+    },
+  ],
+}
+`;
+
+exports[`rendered question flow per literacy register > phase 4 — none 1`] = `
+{
+  "literacy": "none",
+  "phase": 4,
+  "questions": [
+    {
+      "id": "p4.run-target",
+      "options": [
+        {
+          "label": "In a web browser",
+          "value": "web",
+        },
+        {
+          "label": "As a phone app",
+          "value": "mobile",
+        },
+        {
+          "label": "Both web and phone",
+          "value": "both",
+        },
+        {
+          "label": "As a desktop app",
+          "value": "desktop",
+        },
+        {
+          "label": "From the command line",
+          "value": "cli",
+        },
+        {
+          "label": "It's an API — no screens of its own",
+          "value": "api",
+        },
+      ],
+      "prompt": "Where will people use this?",
+      "type": "select",
+    },
+    {
+      "id": "p4.scale",
+      "options": [
+        {
+          "label": "Just me",
+          "value": "just-me",
+        },
+        {
+          "label": "Tens of people",
+          "value": "tens",
+        },
+        {
+          "label": "Hundreds",
+          "value": "hundreds",
+        },
+        {
+          "label": "Thousands",
+          "value": "thousands",
+        },
+        {
+          "label": "More than that",
+          "value": "more",
+        },
+      ],
+      "prompt": "Roughly how many people do you expect to use this in the first year?",
+      "type": "select",
+    },
+    {
+      "help": "Regulated means health, finance, or anything about children.",
+      "id": "p4.sensitivity",
+      "options": [
+        {
+          "label": "Nothing private — public information only",
+          "value": "public",
+        },
+        {
+          "label": "Personal details (names, emails, their own content)",
+          "value": "personal",
+        },
+        {
+          "label": "Regulated data (health, finance, or children)",
+          "value": "regulated",
+        },
+      ],
+      "prompt": "What kind of information will this hold about people?",
+      "type": "select",
+    },
+    {
+      "help": "This affects speed and where data is allowed to live.",
+      "id": "p4.user-location",
+      "options": [
+        {
+          "label": "Mostly one country",
+          "value": "one-country",
+        },
+        {
+          "label": "One region (e.g. Europe, North America)",
+          "value": "one-region",
+        },
+        {
+          "label": "All over the world",
+          "value": "global",
+        },
+      ],
+      "prompt": "Where in the world are the people who will use this?",
+      "type": "select",
+    },
+    {
+      "help": "Profile pictures count. So do PDFs, voice notes, and CSV imports.",
+      "id": "p4.uploads",
+      "prompt": "Will people using your app upload photos, videos, or files?",
+      "type": "confirm",
+    },
+    {
+      "id": "p4.concurrent",
+      "options": [
+        {
+          "label": "No — everyone has their own stuff",
+          "value": "never",
+        },
+        {
+          "label": "Sometimes — e.g. shared documents or bookings",
+          "value": "sometimes",
+        },
+        {
+          "label": "Constantly — it's the point of the product",
+          "value": "core",
+        },
+      ],
+      "prompt": "Will two different people ever change the same thing at the same time?",
+      "type": "select",
+    },
+    {
+      "help": "Subscriptions, one-off purchases, or paying other users all count.",
+      "id": "p4.payments",
+      "prompt": "Will people pay money through the app?",
+      "type": "confirm",
+    },
+    {
+      "help": "Password resets, receipts, reminders, "someone replied" alerts.",
+      "id": "p4.email",
+      "prompt": "Will the app send emails or notifications to people?",
+      "type": "confirm",
+    },
+    {
+      "help": "Daily digests, cleanups, reminders that fire on their own, imports that run overnight.",
+      "id": "p4.background",
+      "prompt": "Does anything need to happen while nobody is using the app?",
+      "type": "confirm",
+    },
+    {
+      "help": "Chatbots, summaries, image generation, smart search — anything that asks an AI model a question live.",
+      "id": "p4.inference",
+      "prompt": "Does the app use AI while people are using it?",
+      "type": "confirm",
+    },
+    {
+      "id": "p4.auth",
+      "options": [
+        {
+          "label": "No sign-in at all",
+          "value": "none",
+        },
+        {
+          "label": "Email and password",
+          "value": "email-password",
+        },
+        {
+          "label": "A login link sent to their email",
+          "value": "magic-link",
+        },
+        {
+          "label": "Sign in with Google / Apple / etc.",
+          "value": "social",
+        },
+        {
+          "label": "Both a password and social sign-in",
+          "value": "both",
+        },
+      ],
+      "prompt": "Do people sign in? And would they expect a "Sign in with Google / Apple" button?",
+      "type": "select",
+    },
+    {
+      "help": "Think a note-taking app on a plane, or a field-work app with no signal.",
+      "id": "p4.offline",
+      "prompt": "Does it need to work with a bad or missing internet connection?",
+      "type": "confirm",
+    },
+    {
+      "help": "A search box that looks inside what users have created, not just filtering a short list.",
+      "id": "p4.search",
+      "prompt": "Will people search through the content in the app?",
+      "type": "confirm",
+    },
+    {
+      "help": "A back office to ban a user, remove a post, or fix bad data.",
+      "id": "p4.admin",
+      "prompt": "Will you need a way to manage users or content behind the scenes?",
+      "type": "confirm",
+    },
+  ],
+}
+`;
+
+exports[`rendered question flow per literacy register > phase 4 — some 1`] = `
+{
+  "literacy": "some",
+  "phase": 4,
+  "questions": [
+    {
+      "id": "p4.run-target",
+      "options": [
+        {
+          "label": "In a web browser",
+          "value": "web",
+        },
+        {
+          "label": "As a phone app",
+          "value": "mobile",
+        },
+        {
+          "label": "Both web and phone",
+          "value": "both",
+        },
+        {
+          "label": "As a desktop app",
+          "value": "desktop",
+        },
+        {
+          "label": "From the command line",
+          "value": "cli",
+        },
+        {
+          "label": "It's an API — no screens of its own",
+          "value": "api",
+        },
+      ],
+      "prompt": "Where does this run?",
+      "type": "select",
+    },
+    {
+      "id": "p4.scale",
+      "options": [
+        {
+          "label": "Just me",
+          "value": "just-me",
+        },
+        {
+          "label": "Tens of people",
+          "value": "tens",
+        },
+        {
+          "label": "Hundreds",
+          "value": "hundreds",
+        },
+        {
+          "label": "Thousands",
+          "value": "thousands",
+        },
+        {
+          "label": "More than that",
+          "value": "more",
+        },
+      ],
+      "prompt": "Expected scale in year one?",
+      "type": "select",
+    },
+    {
+      "help": "Regulated means health, finance, or anything about children.",
+      "id": "p4.sensitivity",
+      "options": [
+        {
+          "label": "Nothing private — public information only",
+          "value": "public",
+        },
+        {
+          "label": "Personal details (names, emails, their own content)",
+          "value": "personal",
+        },
+        {
+          "label": "Regulated data (health, finance, or children)",
+          "value": "regulated",
+        },
+      ],
+      "prompt": "How sensitive is the data?",
+      "type": "select",
+    },
+    {
+      "help": "This affects speed and where data is allowed to live.",
+      "id": "p4.user-location",
+      "options": [
+        {
+          "label": "Mostly one country",
+          "value": "one-country",
+        },
+        {
+          "label": "One region (e.g. Europe, North America)",
+          "value": "one-region",
+        },
+        {
+          "label": "All over the world",
+          "value": "global",
+        },
+      ],
+      "prompt": "Where are your users?",
+      "type": "select",
+    },
+    {
+      "help": "Profile pictures count. So do PDFs, voice notes, and CSV imports.",
+      "id": "p4.uploads",
+      "prompt": "Do users upload media or files?",
+      "type": "confirm",
+    },
+    {
+      "id": "p4.concurrent",
+      "options": [
+        {
+          "label": "No — everyone has their own stuff",
+          "value": "never",
+        },
+        {
+          "label": "Sometimes — e.g. shared documents or bookings",
+          "value": "sometimes",
+        },
+        {
+          "label": "Constantly — it's the point of the product",
+          "value": "core",
+        },
+      ],
+      "prompt": "Will two people ever edit the same record at once?",
+      "type": "select",
+    },
+    {
+      "help": "Subscriptions, one-off purchases, or paying other users all count.",
+      "id": "p4.payments",
+      "prompt": "Do you take payments?",
+      "type": "confirm",
+    },
+    {
+      "help": "Password resets, receipts, reminders, "someone replied" alerts.",
+      "id": "p4.email",
+      "prompt": "Do you send email or notifications?",
+      "type": "confirm",
+    },
+    {
+      "help": "Daily digests, cleanups, reminders that fire on their own, imports that run overnight.",
+      "id": "p4.background",
+      "prompt": "Any scheduled or background work?",
+      "type": "confirm",
+    },
+    {
+      "help": "Chatbots, summaries, image generation, smart search — anything that asks an AI model a question live.",
+      "id": "p4.inference",
+      "prompt": "Does anything call an AI model at runtime?",
+      "type": "confirm",
+    },
+    {
+      "id": "p4.auth",
+      "options": [
+        {
+          "label": "No sign-in at all",
+          "value": "none",
+        },
+        {
+          "label": "Email and password",
+          "value": "email-password",
+        },
+        {
+          "label": "A login link sent to their email",
+          "value": "magic-link",
+        },
+        {
+          "label": "Sign in with Google / Apple / etc.",
+          "value": "social",
+        },
+        {
+          "label": "Both a password and social sign-in",
+          "value": "both",
+        },
+      ],
+      "prompt": "How do users sign in?",
+      "type": "select",
+    },
+    {
+      "help": "Think a note-taking app on a plane, or a field-work app with no signal.",
+      "id": "p4.offline",
+      "prompt": "Offline support required?",
+      "type": "confirm",
+    },
+    {
+      "help": "A search box that looks inside what users have created, not just filtering a short list.",
+      "id": "p4.search",
+      "prompt": "Do users search the content?",
+      "type": "confirm",
+    },
+    {
+      "help": "A back office to ban a user, remove a post, or fix bad data.",
+      "id": "p4.admin",
+      "prompt": "Do you need an admin surface?",
+      "type": "confirm",
+    },
+  ],
+}
+`;

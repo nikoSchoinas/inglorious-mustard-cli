@@ -1,0 +1,24 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderStructure > snapshots a nested 03-STRUCTURE.md tree 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 4
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: testsession01
+---
+
+# Structure
+
+Proposed starting layout for a fresh repository built on the accepted stack.
+
+\`\`\`text
+├── src/  # App code
+│   ├── index.ts
+│   └── components/
+│       └── Button.tsx
+└── package.json  # Dependencies
+\`\`\`
+"
+`;
