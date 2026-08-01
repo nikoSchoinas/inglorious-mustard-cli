@@ -77,6 +77,17 @@ describe('session schemas', () => {
     expect(session.tasks).toEqual([]);
   });
 
+  it('round-trips every facts value union member, including multiselect arrays', () => {
+    const facts = {
+      'manifesto.rules': ['ship-before-perfect', 'write-my-own'],
+      'needs.objectStorage': true,
+      actorCount: 3,
+      literacy: 'some',
+    };
+    const session = MustardSession.parse(makeSession({ facts }));
+    expect(session.facts).toEqual(facts);
+  });
+
   it('rejects a schemaVersion other than 1', () => {
     expect(MustardSession.safeParse(makeSession({ schemaVersion: 2 as never })).success).toBe(
       false,

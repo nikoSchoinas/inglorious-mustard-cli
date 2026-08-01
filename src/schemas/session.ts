@@ -56,7 +56,9 @@ export const MustardSession = z.object({
   ]),
   currentPhase: z.number().int(),
   phases: z.array(PhaseState),
-  facts: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).default({}),
+  facts: z
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]))
+    .default({}),
   tasks: z.array(Task).default([]),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),

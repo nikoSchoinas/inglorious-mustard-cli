@@ -12,8 +12,12 @@
  * Wiring this into the live answer/analysis flow is M5; M1 ships the helper only.
  */
 
-/** A fact value — matches the `MustardSession.facts` value union (§9.3). */
-export type FactValue = string | number | boolean;
+/**
+ * A fact value — matches the `MustardSession.facts` value union (§9.3).
+ * Arrays enter the store via multiselect `mapsTo` answers; ANALYSE
+ * `derivedFacts` remain scalar strings.
+ */
+export type FactValue = string | number | boolean | readonly string[];
 
 /** Where a fact came from. Answers win over derived facts. */
 export type FactSource = 'answer' | 'derived';

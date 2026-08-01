@@ -55,4 +55,20 @@ describe('mergeFacts', () => {
     ]);
     expect(merged).toEqual({ s: 'text', n: 42, b: true });
   });
+
+  it('lets an answer-sourced array (multiselect) overwrite a derived scalar', () => {
+    const current = { 'manifesto.rules': 'stale-derived' };
+    const merged = mergeFacts(current, [
+      { key: 'manifesto.rules', value: ['ship-before-perfect', 'write-my-own'], source: 'answer' },
+    ]);
+    expect(merged['manifesto.rules']).toEqual(['ship-before-perfect', 'write-my-own']);
+  });
+
+  it('does not let a derived fact overwrite an answer-sourced array', () => {
+    const current = { 'manifesto.rules': ['write-my-own'] };
+    const merged = mergeFacts(current, [
+      { key: 'manifesto.rules', value: 'derived', source: 'derived' },
+    ]);
+    expect(merged['manifesto.rules']).toEqual(['write-my-own']);
+  });
 });
