@@ -5,6 +5,7 @@ import { createAnalyse } from '../../src/llm/passes/analyse.js';
 import { createSynthesise } from '../../src/llm/passes/synthesise.js';
 import { FakeTransport } from '../../src/llm/transport.js';
 import type { Phase } from '../../src/questions/types.js';
+import { createRendererRegistry } from '../../src/render/register.js';
 import type { ManifestoArtifact } from '../../src/schemas/manifesto.js';
 import { makeSession } from './fixtures.js';
 
@@ -95,6 +96,7 @@ describe('createSynthesise (manifesto)', () => {
       model: MODEL,
       mustardVersion: '0.1.0',
       now: CLOCK,
+      registry: createRendererRegistry(),
     });
     const outcome = await synthesise(manifestoPhase(), sessionWithManifestoAnswers(), undefined);
     if (outcome.status !== 'ok') {
@@ -116,6 +118,7 @@ describe('createSynthesise (manifesto)', () => {
       model: MODEL,
       mustardVersion: '0.1.0',
       now: CLOCK,
+      registry: createRendererRegistry(),
     });
     const outcome = await synthesise(manifestoPhase(), sessionWithManifestoAnswers(), undefined);
     expect(outcome.status).toBe('ok');
@@ -133,6 +136,7 @@ describe('createSynthesise (manifesto)', () => {
       model: MODEL,
       mustardVersion: '0.1.0',
       now: CLOCK,
+      registry: createRendererRegistry(),
     });
     const outcome = await synthesise(manifestoPhase(), sessionWithManifestoAnswers(), undefined);
     expect(outcome.status).toBe('degraded');

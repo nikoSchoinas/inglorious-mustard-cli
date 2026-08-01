@@ -1,4 +1,6 @@
 import type { AnalyseFn, SynthesiseFn } from '../../engine/runner.js';
+import { createRendererRegistry } from '../../render/register.js';
+import type { RendererRegistry } from '../../render/registry.js';
 import type { MustardConfig } from '../../schemas/config.js';
 import { readVersion } from '../../version.js';
 import { LLMClient, type LLMClientOptions } from '../client.js';
@@ -32,6 +34,8 @@ export interface BuildPassesOptions {
   now?: () => string;
   /** Package version for frontmatter. Defaults to the resolved runtime version. */
   mustardVersion?: string;
+  /** Override the renderer registry (tests inject a stub). Defaults to production. */
+  registry?: RendererRegistry;
 }
 
 export function buildPasses(config: MustardConfig, opts: BuildPassesOptions = {}): Passes {
@@ -40,6 +44,7 @@ export function buildPasses(config: MustardConfig, opts: BuildPassesOptions = {}
 
   const fastModel = createModelForTier(config, 'fast', { apiKey: opts.apiKey });
   const deepModel = createModelForTier(config, 'deep', { apiKey: opts.apiKey });
+  const registry = opts.registry ?? createRendererRegistry();
 
   return {
     analyse: createAnalyse({ client, model: fastModel }),
@@ -48,6 +53,7 @@ export function buildPasses(config: MustardConfig, opts: BuildPassesOptions = {}
       model: deepModel,
       mustardVersion: opts.mustardVersion ?? readVersion(),
       now: opts.now ?? (() => new Date().toISOString()),
+      registry,
     }),
   };
 }

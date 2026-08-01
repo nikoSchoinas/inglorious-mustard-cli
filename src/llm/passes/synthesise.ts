@@ -1,9 +1,8 @@
 import type { LanguageModel } from 'ai';
 import type { SynthesisOutput, SynthesiseFn } from '../../engine/runner.js';
-import { renderAiLaws } from '../../render/markdown/ai-laws.js';
 import { CapExceededError } from '../../render/markdown/caps.js';
 import { type FrontmatterMeta, deriveSessionId } from '../../render/markdown/frontmatter.js';
-import { renderManifesto } from '../../render/markdown/manifesto.js';
+import type { RendererRegistry } from '../../render/registry.js';
 import { ManifestoArtifact } from '../../schemas/manifesto.js';
 import type { MustardSession } from '../../schemas/session.js';
 import type { LlmOutcome } from '../client.js';
@@ -27,13 +26,17 @@ export interface SynthesiseDeps {
   mustardVersion: string;
   /** ISO clock for the `generated_at` frontmatter. Injectable for deterministic tests. */
   now: () => string;
+  /** Artifact-name → renderer registry (§9.4); drives which files a phase emits. */
+  registry: RendererRegistry;
 }
 
 export function createSynthesise(deps: SynthesiseDeps): SynthesiseFn {
   return async (phase, session, steering) => {
     const passName = phase.synthesis?.pass;
+    // Each phase declares the artifacts it emits; the registry renders them.
+    const artifacts = phase.synthesis?.artifacts ?? [];
     if (passName === 'synthesise-manifesto') {
-      return synthesiseManifesto(deps, session, phase.phase, steering);
+      return synthesiseManifesto(deps, session, phase.phase, artifacts, steering);
     }
     throw new Error(`No synthesis pass registered for "${passName}" (phase ${phase.phase}).`);
   };
@@ -54,6 +57,7 @@ async function synthesiseManifesto(
   deps: SynthesiseDeps,
   session: MustardSession,
   phaseId: number,
+  artifacts: readonly string[],
   steering: 'detail' | 'differently' | undefined,
 ): Promise<LlmOutcome<SynthesisOutput>> {
   const ps = phaseStateOf(session, phaseId);
@@ -88,7 +92,7 @@ async function synthesiseManifesto(
   }
 
   try {
-    return { status: 'ok', value: renderArtifacts(outcome.value, meta) };
+    return { status: 'ok', value: renderOutput(deps, artifacts, outcome.value, meta) };
   } catch (err) {
     if (!(err instanceof CapExceededError)) {
       throw err;
@@ -107,7 +111,7 @@ async function synthesiseManifesto(
       return outcome;
     }
     try {
-      return { status: 'ok', value: renderArtifacts(outcome.value, meta) };
+      return { status: 'ok', value: renderOutput(deps, artifacts, outcome.value, meta) };
     } catch (err2) {
       if (err2 instanceof CapExceededError) {
         return { status: 'degraded', reason: err2.message };
@@ -117,12 +121,15 @@ async function synthesiseManifesto(
   }
 }
 
-function renderArtifacts(obj: ManifestoArtifact, meta: FrontmatterMeta): SynthesisOutput {
-  return {
-    object: obj,
-    artifacts: [
-      { name: '01-MANIFESTO.md', body: renderManifesto(obj, meta) },
-      { name: '01-AI-LAWS.md', body: renderAiLaws(obj, meta) },
-    ],
-  };
+/**
+ * Render a phase's declared artifacts via the registry (§9.4). Renderer cap
+ * breaches surface as `CapExceededError` here, exactly as before the rewire.
+ */
+function renderOutput(
+  deps: SynthesiseDeps,
+  artifacts: readonly string[],
+  obj: ManifestoArtifact,
+  meta: FrontmatterMeta,
+): SynthesisOutput {
+  return { object: obj, artifacts: deps.registry.renderAll(artifacts, obj, meta) };
 }
