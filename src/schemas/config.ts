@@ -16,6 +16,17 @@ export const MustardConfig = z.object({
     deep: z.string().min(1),
   }),
   apiKeySource: z.enum(['env', 'config', 'keyring']),
+  // Present only when `apiKeySource === 'config'`: the key lives in the same
+  // mode-0600 file (§9.5). For 'env' and 'keyring' the key is resolved elsewhere
+  // and this stays undefined, so it never ends up on disk.
+  apiKey: z.string().min(1).optional(),
   telemetry: z.boolean().default(false), // opt-in, off by default (§12)
 });
 export type MustardConfig = z.infer<typeof MustardConfig>;
+
+/** The provider identifiers MUSTARD can drive as its own reasoning backend. */
+export const Provider = MustardConfig.shape.provider;
+export type Provider = z.infer<typeof Provider>;
+
+/** Where an API key is read from, in precedence order (env → config → keyring). */
+export type ApiKeySource = z.infer<typeof MustardConfig.shape.apiKeySource>;
