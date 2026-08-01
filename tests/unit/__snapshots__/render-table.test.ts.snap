@@ -1,0 +1,8 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderTable > renders an aligned table 1`] = `
+"| Attribute | Type | Required |
+| --- | :---: | ---: |
+| email | string | yes |
+| age | number | no |"
+`;
