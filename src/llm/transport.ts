@@ -3,6 +3,7 @@ import type { z } from 'zod';
 import {
   type FixtureKey,
   computeFixtureKey,
+  defaultFixturesRoot,
   fixtureFilePath,
   readFixture,
   writeFixture,
@@ -161,4 +162,23 @@ export function modeFromEnv(env: NodeJS.ProcessEnv = process.env): LLMMode {
     return raw;
   }
   return 'real';
+}
+
+/**
+ * Build the production transport for a mode (technical-plan §2.3). `record` wraps a
+ * real transport so it also writes fixtures; `replay` reads fixtures only. The
+ * fixtures root defaults to `tests/fixtures` and is overridable for tests.
+ */
+export function createTransport(
+  mode: LLMMode,
+  fixturesRoot: string = defaultFixturesRoot(),
+): LLMTransport {
+  switch (mode) {
+    case 'replay':
+      return new ReplayTransport(fixturesRoot);
+    case 'record':
+      return new RecordTransport(new RealTransport(), fixturesRoot);
+    case 'real':
+      return new RealTransport();
+  }
 }
