@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { phase0 } from '../../src/questions/bank/phase-0.js';
 import { phase1 } from '../../src/questions/bank/phase-1.js';
+import { phase2 } from '../../src/questions/bank/phase-2.js';
 import { renderQuestionFlow } from '../../src/questions/index.js';
 import type { Facts, Literacy } from '../../src/questions/types.js';
 
@@ -39,4 +40,12 @@ describe('rendered question flow per literacy register', () => {
     const flow = renderQuestionFlow(phase1, 'none', facts);
     expect(flow.questions.map((q) => q.id)).not.toContain('p1.custom-rules');
   });
+
+  // Phase 2 has a single unconditional seed question (the raw capture); the rest of
+  // the phase is bespoke flow, not bank questions.
+  for (const literacy of LITERACIES) {
+    it(`phase 2 — ${literacy}`, () => {
+      expect(renderQuestionFlow(phase2, literacy, {})).toMatchSnapshot();
+    });
+  }
 });

@@ -710,3 +710,48 @@ exports[`rendered question flow per literacy register > phase 1 — some 1`] = `
   ],
 }
 `;
+
+exports[`rendered question flow per literacy register > phase 2 — developer 1`] = `
+{
+  "literacy": "developer",
+  "phase": 2,
+  "questions": [
+    {
+      "help": "Just tell the story. We'll pull out the actors and moving parts for you.",
+      "id": "p2.capture",
+      "prompt": "Describe the primary end-to-end user flow on first use.",
+      "type": "editor",
+    },
+  ],
+}
+`;
+
+exports[`rendered question flow per literacy register > phase 2 — none 1`] = `
+{
+  "literacy": "none",
+  "phase": 2,
+  "questions": [
+    {
+      "help": "Just tell the story. We'll pull out the actors and moving parts for you.",
+      "id": "p2.capture",
+      "prompt": "Walk me through what someone does with this, start to finish, the first time they use it. Plain language — don't worry about being technical.",
+      "type": "editor",
+    },
+  ],
+}
+`;
+
+exports[`rendered question flow per literacy register > phase 2 — some 1`] = `
+{
+  "literacy": "some",
+  "phase": 2,
+  "questions": [
+    {
+      "help": "Just tell the story. We'll pull out the actors and moving parts for you.",
+      "id": "p2.capture",
+      "prompt": "Walk me through a first-time user’s journey with this, start to finish.",
+      "type": "editor",
+    },
+  ],
+}
+`;

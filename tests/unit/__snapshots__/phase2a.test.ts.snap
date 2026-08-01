@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`runPhase2A — full replay run > shows the reflection summary before asking for corrections 1`] = `
+"Here's what I heard. Correct me on the next few questions.
+
+Actors:
+  - Member (primary) — Someone building a daily habit
+  - Coach — Someone reviewing a member's progress
+
+Things it keeps track of:
+  - Habit — A habit being tracked
+  - CheckIn — A daily completion record"
+`;

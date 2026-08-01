@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderReflection > renders a stable, human-readable summary of actors and entities 1`] = `
+"Here's what I heard. Correct me on the next few questions.
+
+Actors:
+  - Member (primary) — A signed-in user
+
+Things it keeps track of:
+  - User — An account holder
+  - Habit — A tracked habit
+  - Tag — A label"
+`;

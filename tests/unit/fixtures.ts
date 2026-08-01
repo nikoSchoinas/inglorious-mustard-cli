@@ -34,7 +34,7 @@ export function makeSession(overrides: Partial<MustardSession> = {}): MustardSes
         artifactPaths: [],
       },
     ],
-    facts: { 'facts.actorCount': 1 },
+    facts: { actorCount: 1 },
     tasks: [],
     createdAt: '2026-07-31T10:00:00.000Z',
     updatedAt: '2026-07-31T10:00:00.000Z',
