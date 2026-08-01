@@ -1,0 +1,61 @@
+{
+  "pass": "propose-structure",
+  "promptVersion": "1",
+  "schemaHash": "ac824fd3320037f9598d02992f6844a1867692601007c505d5e5ce6ef967fa8e",
+  "inputHash": "23339c9084d2c86d5449564a5751b41342f1622912f55723c2d1010d4e511fa9",
+  "recordedInput": {
+    "phase": 4,
+    "literacy": "some",
+    "stack": [
+      {
+        "category": "frontend",
+        "choice": "Next.js"
+      },
+      {
+        "category": "database",
+        "choice": "PostgreSQL"
+      },
+      {
+        "category": "storage",
+        "choice": "Cloudflare R2"
+      },
+      {
+        "category": "auth",
+        "choice": "Auth0"
+      }
+    ],
+    "models": ["Habit", "CheckIn"]
+  },
+  "response": [
+    {
+      "name": "src",
+      "kind": "dir",
+      "description": "Application code",
+      "children": [
+        {
+          "name": "app",
+          "kind": "dir",
+          "description": "Next.js routes and pages"
+        },
+        {
+          "name": "models",
+          "kind": "dir",
+          "description": "Habit and CheckIn data models"
+        },
+        {
+          "name": "lib",
+          "kind": "dir",
+          "description": "Database and storage clients"
+        }
+      ]
+    },
+    {
+      "name": "package.json",
+      "kind": "file"
+    },
+    {
+      "name": "README.md",
+      "kind": "file"
+    }
+  ]
+}

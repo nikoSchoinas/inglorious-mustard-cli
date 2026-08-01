@@ -1,0 +1,29 @@
+{
+  "pass": "explain-stack",
+  "promptVersion": "1",
+  "schemaHash": "9c6cf61cc96d5114e58a07d95c41c4ca0ce141b6617ff9a41f70a75c06d0011d",
+  "inputHash": "a5c474fccb83e5dd36a1c0565ec1ef612ca9cd1c0e40fdd3ccab2d53e3d565da",
+  "recordedInput": {
+    "phase": 4,
+    "literacy": "some",
+    "product": "A member opens the app, creates a daily habit, and checks in each day.",
+    "decision": {
+      "category": "frontend",
+      "choice": "Next.js",
+      "justification": "Next.js gives you a single well-trodden framework for the screens and the server bits, which is exactly what a habit tracker on the web needs.",
+      "alternatives": [
+        {
+          "name": "Remix",
+          "tradeoff": "Great data handling, smaller ecosystem."
+        },
+        {
+          "name": "SvelteKit",
+          "tradeoff": "Lighter to write, fewer hired hands know it."
+        }
+      ]
+    }
+  },
+  "response": {
+    "explanation": "Next.js is a framework that bundles the front-end screens and a small backend together. It wins when you want one codebase and good defaults; a lighter tool like SvelteKit is better if bundle size is your top concern."
+  }
+}

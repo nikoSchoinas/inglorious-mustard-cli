@@ -1,0 +1,126 @@
+{
+  "pass": "propose-stack",
+  "promptVersion": "1",
+  "schemaHash": "b18ad975f0fbb76cc7939aa63fe3d50c7d58cb3618f20078ae7b8bda9cb4cdc0",
+  "inputHash": "e88b553ebb8b249f7d16928d4a65b630f38e51a08dbae8d77a47b7b79bfda579",
+  "recordedInput": {
+    "phase": 4,
+    "literacy": "some",
+    "needs": {
+      "admin": false,
+      "auth": "email-password",
+      "background": true,
+      "email": true,
+      "inference": false,
+      "objectStorage": true,
+      "offline": false,
+      "payments": false,
+      "search": false
+    },
+    "context": {
+      "runTarget": "web",
+      "scale": "hundreds",
+      "sensitivity": "personal",
+      "userLocation": "one-country"
+    },
+    "product": {
+      "description": "A member opens the app, creates a daily habit, and checks in each day.",
+      "models": [
+        {
+          "name": "Habit",
+          "description": "A habit being tracked",
+          "attributes": [
+            {
+              "name": "title",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "name": "CheckIn",
+          "description": "A daily completion record",
+          "attributes": [
+            {
+              "name": "date",
+              "type": "date"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "response": [
+    {
+      "componentId": "web-frontend",
+      "category": "frontend",
+      "choice": "Next.js",
+      "justification": "Next.js gives you a single well-trodden framework for the screens and the server bits, which is exactly what a habit tracker on the web needs.",
+      "alternatives": [
+        {
+          "name": "Remix",
+          "tradeoff": "Great data handling, smaller ecosystem."
+        },
+        {
+          "name": "SvelteKit",
+          "tradeoff": "Lighter to write, fewer hired hands know it."
+        }
+      ],
+      "locked": false
+    },
+    {
+      "componentId": "primary-database",
+      "category": "database",
+      "choice": "PostgreSQL",
+      "justification": "A rock-solid relational database that fits the Habit and CheckIn tables cleanly and scales well past your first hundreds of users.",
+      "alternatives": [
+        {
+          "name": "SQLite",
+          "tradeoff": "Zero setup, awkward once you have many writers."
+        },
+        {
+          "name": "MySQL",
+          "tradeoff": "Also solid, slightly weaker JSON support."
+        }
+      ],
+      "locked": false
+    },
+    {
+      "componentId": "object-storage",
+      "category": "storage",
+      "choice": "Amazon S3",
+      "justification": "Because people upload files, you need somewhere durable to keep them; S3 is the default the whole ecosystem is built around.",
+      "alternatives": [
+        {
+          "name": "Cloudflare R2",
+          "tradeoff": "No egress fees, newer tooling."
+        },
+        {
+          "name": "Supabase Storage",
+          "tradeoff": "Bundled with the DB, less control."
+        }
+      ],
+      "locked": false
+    },
+    {
+      "componentId": "authentication",
+      "category": "auth",
+      "choice": "Clerk",
+      "justification": "A hosted sign-in service so you do not hand-roll password security; drops into a Next.js app in an afternoon.",
+      "alternatives": [
+        {
+          "name": "Auth.js",
+          "tradeoff": "Free and flexible, more wiring to do."
+        },
+        {
+          "name": "Supabase Auth",
+          "tradeoff": "Bundled with the DB, less polished UI."
+        }
+      ],
+      "locked": false
+    }
+  ]
+}
