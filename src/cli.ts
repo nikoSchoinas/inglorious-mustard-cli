@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
+import { PRODUCT_NAME, SLOGAN } from './branding.js';
 
 /**
  * Read the package version at runtime. Resolving relative to `import.meta.url`
@@ -26,7 +27,7 @@ export function buildProgram(): Command {
 
   program
     .name('mustard')
-    .description('Inglorious M.U.S.T.A.R.D. — extract your spec instead of writing one.')
+    .description(`${PRODUCT_NAME} — ${SLOGAN}`)
     .version(readVersion(), '-v, --version', 'output the current version');
 
   // Global flags (declared now; wired to behaviour in later milestones).
