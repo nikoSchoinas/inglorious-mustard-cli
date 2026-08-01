@@ -7,6 +7,8 @@ import { LLMClient, type LLMClientOptions } from '../client.js';
 import { createModelForTier } from '../router.js';
 import { type LLMTransport, createTransport, modeFromEnv } from '../transport.js';
 import { createAnalyse } from './analyse.js';
+import { type ExtractFn, createExtract } from './extract.js';
+import { type SuggestCapabilitiesFn, createSuggestCapabilities } from './suggest-capabilities.js';
 import { createSynthesise } from './synthesise.js';
 
 /**
@@ -20,6 +22,10 @@ import { createSynthesise } from './synthesise.js';
 export interface Passes {
   analyse: AnalyseFn;
   synthesise: SynthesiseFn;
+  /** Phase 2 EXTRACT pass (fast) — owned by the `runPhase2A` orchestrator, not `runPhase`. */
+  extract: ExtractFn;
+  /** Phase 2 per-actor capability suggestion pass (fast). */
+  suggestCapabilities: SuggestCapabilitiesFn;
 }
 
 export interface BuildPassesOptions {
@@ -55,5 +61,7 @@ export function buildPasses(config: MustardConfig, opts: BuildPassesOptions = {}
       now: opts.now ?? (() => new Date().toISOString()),
       registry,
     }),
+    extract: createExtract({ client, model: fastModel }),
+    suggestCapabilities: createSuggestCapabilities({ client, model: fastModel }),
   };
 }

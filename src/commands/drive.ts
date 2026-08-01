@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { syncSessionIdentity } from '../engine/identity.js';
+import { type RunPhase2ADeps, runPhase2A as realRunPhase2A } from '../engine/phase-2a.js';
 import type { AnalyseFn, RunnerIO, SynthesiseFn } from '../engine/runner.js';
 import { runPhase } from '../engine/runner.js';
 import { mustardDir, saveSession } from '../engine/session.js';
@@ -47,6 +48,8 @@ export interface MissionDeps {
   io?: RunnerIO;
   save?: (session: MustardSession) => MustardSession;
   buildPasses?: (config: MustardConfig, opts?: BuildPassesOptions) => Passes;
+  /** Phase 2A orchestrator (M8). Injectable so tests can stub it. */
+  runPhase2A?: (session: MustardSession, deps: RunPhase2ADeps) => Promise<MustardSession>;
   setup?: (provider: Provider, deps: SetupDeps) => Promise<SetupResult>;
   // Passed through to the setup step:
   transport?: LLMTransport;
@@ -63,6 +66,7 @@ export async function driveMission(
   const io = deps.io ?? fileArtifactIO(deps.cwd);
   const save = deps.save ?? ((s: MustardSession) => saveSession(s, deps.cwd));
   const buildPasses = deps.buildPasses ?? realBuildPasses;
+  const runPhase2A = deps.runPhase2A ?? realRunPhase2A;
   const setup = deps.setup ?? runSetup;
 
   // Phase 0 has no synthesis, so these are never called; guard loudly if they are.
@@ -107,6 +111,23 @@ export async function driveMission(
       synthesise: passes.synthesise,
       io,
       editor: deps.editor,
+      now,
+      save,
+    });
+    current = save(syncSessionIdentity(current));
+  }
+
+  // Phase 2A — Use Cases & UI, part A (M8): capture → extract → reflection →
+  // capability loop. A bespoke orchestrator, not `runPhase` (§8.5 doesn't fit the
+  // generic machine). It ends with a confirmed DomainExtraction in session state and
+  // leaves the phase `in_progress`; M9 (part B) adds synthesis and `02-USE-CASES.md`,
+  // and only then marks the phase accepted. Idempotent, so a resumed run no-ops once
+  // the capability loop is complete.
+  if (!isAccepted(current, 2)) {
+    current = await runPhase2A(current, {
+      prompter: deps.prompter,
+      extract: passes.extract,
+      suggestCapabilities: passes.suggestCapabilities,
       now,
       save,
     });
