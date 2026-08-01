@@ -16,7 +16,6 @@ export const MustardConfig = z.object({
     deep: z.string().min(1),
   }),
   apiKeySource: z.enum(['env', 'config', 'keyring']),
-  maxSessionUsd: z.number().positive().default(5),
   telemetry: z.boolean().default(false), // opt-in, off by default (§12)
 });
 export type MustardConfig = z.infer<typeof MustardConfig>;

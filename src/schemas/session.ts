@@ -32,18 +32,6 @@ export const PhaseState = z.object({
 });
 export type PhaseState = z.infer<typeof PhaseState>;
 
-/** One line in the cost ledger (§9.3): tokens + estimated USD for a single LLM pass. */
-export const CostEntry = z.object({
-  phase: z.number(),
-  pass: z.string(),
-  model: z.string(),
-  inputTokens: z.number(),
-  outputTokens: z.number(),
-  estimatedUsd: z.number(),
-  at: z.iso.datetime(),
-});
-export type CostEntry = z.infer<typeof CostEntry>;
-
 /**
  * The entire committed session state (`mustard/.session.json`, spec §9.3).
  *
@@ -68,7 +56,6 @@ export const MustardSession = z.object({
   ]),
   currentPhase: z.number().int(),
   phases: z.array(PhaseState),
-  ledger: z.array(CostEntry),
   facts: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).default({}),
   tasks: z.array(Task).default([]),
   createdAt: z.iso.datetime(),
