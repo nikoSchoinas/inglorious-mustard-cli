@@ -6,6 +6,7 @@
 export * from './analysis.js';
 export * from './config.js';
 export * from './extraction.js';
+export * from './manifesto.js';
 export * from './session.js';
 export * from './stack.js';
 export * from './task.js';
