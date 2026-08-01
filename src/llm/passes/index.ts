@@ -8,6 +8,10 @@ import { createModelForTier } from '../router.js';
 import { type LLMTransport, createTransport, modeFromEnv } from '../transport.js';
 import { createAnalyse } from './analyse.js';
 import { type ExtractFn, createExtract } from './extract.js';
+import { type FailureQuestionsFn, createFailureQuestions } from './failure-questions.js';
+import { type FailureStructureFn, createFailureStructure } from './failure-structure.js';
+import { type HappyPathFn, createHappyPath } from './happy-path.js';
+import { type OrderUseCasesFn, createOrderUseCases } from './order-use-cases.js';
 import { type SuggestCapabilitiesFn, createSuggestCapabilities } from './suggest-capabilities.js';
 import { createSynthesise } from './synthesise.js';
 
@@ -26,6 +30,14 @@ export interface Passes {
   extract: ExtractFn;
   /** Phase 2 per-actor capability suggestion pass (fast). */
   suggestCapabilities: SuggestCapabilitiesFn;
+  /** Phase 2B per-use-case happy-path draft pass (fast). */
+  happyPath: HappyPathFn;
+  /** Phase 2B per-use-case failure-question pass (fast) — the signature interrogation. */
+  failureQuestions: FailureQuestionsFn;
+  /** Phase 2B per-use-case failure-structuring pass (fast). */
+  failureStructure: FailureStructureFn;
+  /** Phase 2B dependency-ordering pass (fast). */
+  orderUseCases: OrderUseCasesFn;
 }
 
 export interface BuildPassesOptions {
@@ -63,5 +75,9 @@ export function buildPasses(config: MustardConfig, opts: BuildPassesOptions = {}
     }),
     extract: createExtract({ client, model: fastModel }),
     suggestCapabilities: createSuggestCapabilities({ client, model: fastModel }),
+    happyPath: createHappyPath({ client, model: fastModel }),
+    failureQuestions: createFailureQuestions({ client, model: fastModel }),
+    failureStructure: createFailureStructure({ client, model: fastModel }),
+    orderUseCases: createOrderUseCases({ client, model: fastModel }),
   };
 }
