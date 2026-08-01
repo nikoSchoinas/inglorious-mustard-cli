@@ -1,7 +1,9 @@
 import { ManifestoArtifact } from '../schemas/manifesto.js';
 import { Phase2Output } from '../schemas/phase2-output.js';
+import { Phase3Output } from '../schemas/schema-model.js';
 import { renderAiLaws } from './markdown/ai-laws.js';
 import { renderManifesto } from './markdown/manifesto.js';
+import { renderSchemas } from './markdown/schemas.js';
 import { renderUseCases } from './markdown/use-cases.js';
 import { RendererRegistry, defineRenderer } from './registry.js';
 
@@ -16,7 +18,7 @@ export function createRendererRegistry(): RendererRegistry {
     defineRenderer('01-MANIFESTO.md', ManifestoArtifact, renderManifesto),
     defineRenderer('01-AI-LAWS.md', ManifestoArtifact, renderAiLaws),
     defineRenderer('02-USE-CASES.md', Phase2Output, renderUseCases),
-    // M10: defineRenderer('03-SCHEMAS.md', DomainExtraction, renderSchemas),
+    defineRenderer('03-SCHEMAS.md', Phase3Output, renderSchemas),
     // M11: defineRenderer('04-STACK.md', z.array(StackDecision), renderStack), …
   ]);
 }

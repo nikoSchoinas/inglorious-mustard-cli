@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderSchemas > renders a stable 03-SCHEMAS.md 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 3
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: testsession01
+---
+
+# Schemas
+
+## Models
+
+### Order
+
+A customer purchase
+
+| Attribute | Type | Required | Allowed values |
+| --- | --- | --- | --- |
+| total | number | Yes | — |
+| status | string | Yes | pending, paid, shipped |
+
+### Item
+
+| Attribute | Type | Required | Allowed values |
+| --- | --- | --- | --- |
+| name | string | Yes | — |
+
+## Entity relationships
+
+\`\`\`mermaid
+erDiagram
+  Order {
+    number total "required"
+    string status "required, enum"
+  }
+  Item {
+    string name "required"
+  }
+  Order ||--o{ Item : "relates to"
+\`\`\`
+
+## Data retention
+
+Deleted records are recoverable (soft delete — kept and restorable).
+"
+`;
