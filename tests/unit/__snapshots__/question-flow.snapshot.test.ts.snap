@@ -827,3 +827,90 @@ exports[`rendered question flow per literacy register > phase 2 — some 1`] = `
   ],
 }
 `;
+
+exports[`rendered question flow per literacy register > phase 3 — developer 1`] = `
+{
+  "literacy": "developer",
+  "phase": 3,
+  "questions": [
+    {
+      "help": "Soft delete keeps a hidden copy you can restore; hard delete removes it for good.",
+      "id": "p3.retention",
+      "options": [
+        {
+          "label": "Yes — keep it and allow it to be restored (soft delete)",
+          "value": "recoverable",
+        },
+        {
+          "label": "Keep it, but hidden and not restorable in-app (archive)",
+          "value": "archived",
+        },
+        {
+          "label": "No — remove it permanently (hard delete)",
+          "value": "hard_delete",
+        },
+      ],
+      "prompt": "Delete semantics — soft delete, archive, or hard delete?",
+      "type": "select",
+    },
+  ],
+}
+`;
+
+exports[`rendered question flow per literacy register > phase 3 — none 1`] = `
+{
+  "literacy": "none",
+  "phase": 3,
+  "questions": [
+    {
+      "help": "Soft delete keeps a hidden copy you can restore; hard delete removes it for good.",
+      "id": "p3.retention",
+      "options": [
+        {
+          "label": "Yes — keep it and allow it to be restored (soft delete)",
+          "value": "recoverable",
+        },
+        {
+          "label": "Keep it, but hidden and not restorable in-app (archive)",
+          "value": "archived",
+        },
+        {
+          "label": "No — remove it permanently (hard delete)",
+          "value": "hard_delete",
+        },
+      ],
+      "prompt": "When someone deletes something, should they be able to get it back later?",
+      "type": "select",
+    },
+  ],
+}
+`;
+
+exports[`rendered question flow per literacy register > phase 3 — some 1`] = `
+{
+  "literacy": "some",
+  "phase": 3,
+  "questions": [
+    {
+      "help": "Soft delete keeps a hidden copy you can restore; hard delete removes it for good.",
+      "id": "p3.retention",
+      "options": [
+        {
+          "label": "Yes — keep it and allow it to be restored (soft delete)",
+          "value": "recoverable",
+        },
+        {
+          "label": "Keep it, but hidden and not restorable in-app (archive)",
+          "value": "archived",
+        },
+        {
+          "label": "No — remove it permanently (hard delete)",
+          "value": "hard_delete",
+        },
+      ],
+      "prompt": "When a record is deleted, should it be recoverable?",
+      "type": "select",
+    },
+  ],
+}
+`;

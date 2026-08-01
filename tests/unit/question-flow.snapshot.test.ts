@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { phase0 } from '../../src/questions/bank/phase-0.js';
 import { phase1 } from '../../src/questions/bank/phase-1.js';
 import { phase2 } from '../../src/questions/bank/phase-2.js';
+import { phase3 } from '../../src/questions/bank/phase-3.js';
 import { renderQuestionFlow } from '../../src/questions/index.js';
 import type { Facts, Literacy } from '../../src/questions/types.js';
 
@@ -46,6 +47,14 @@ describe('rendered question flow per literacy register', () => {
   for (const literacy of LITERACIES) {
     it(`phase 2 — ${literacy}`, () => {
       expect(renderQuestionFlow(phase2, literacy, {})).toMatchSnapshot();
+    });
+  }
+
+  // Phase 3 is translation mode: a single global retention select is its only bank
+  // question (cardinality disambiguation and enum discovery are bespoke runtime flow).
+  for (const literacy of LITERACIES) {
+    it(`phase 3 — ${literacy}`, () => {
+      expect(renderQuestionFlow(phase3, literacy, {})).toMatchSnapshot();
     });
   }
 });
