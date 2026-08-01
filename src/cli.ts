@@ -34,7 +34,7 @@ export function buildProgram(): Command {
   program
     .option('--no-color', 'disable coloured output')
     .option('--json', 'machine-readable output')
-    .option('--dry-run', 'run the interrogation, estimate cost, write nothing');
+    .option('--dry-run', 'run the interrogation, write nothing');
 
   program
     .command('init')
@@ -49,7 +49,7 @@ export function buildProgram(): Command {
   program
     .command('status')
     .alias('sitrep')
-    .description('Phase progress, tasks done/total, total spent.')
+    .description('Phase progress, tasks done/total.')
     .action(() => notYetImplemented('status'));
 
   program
@@ -72,13 +72,8 @@ export function buildProgram(): Command {
 
   program
     .command('config')
-    .description('Provider, keys, models, budget.')
+    .description('Provider, keys, models.')
     .action(() => notYetImplemented('config'));
-
-  program
-    .command('cost')
-    .description('Itemised token + cost ledger.')
-    .action(() => notYetImplemented('cost'));
 
   return program;
 }
