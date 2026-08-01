@@ -722,6 +722,30 @@ exports[`rendered question flow per literacy register > phase 2 — developer 1`
       "prompt": "Describe the primary end-to-end user flow on first use.",
       "type": "editor",
     },
+    {
+      "help": "Just the starting point — you can change your mind later.",
+      "id": "p2.ui.approach",
+      "options": [
+        {
+          "label": "Sketch the screens first (paper or a tool like Figma)",
+          "value": "sketch",
+        },
+        {
+          "label": "Use a component library (e.g. shadcn, MUI)",
+          "value": "component-library",
+        },
+        {
+          "label": "Generate a first pass with an AI UI tool (e.g. v0)",
+          "value": "ai-ui",
+        },
+        {
+          "label": "No plan yet — decide later",
+          "value": "none",
+        },
+      ],
+      "prompt": "UI approach?",
+      "type": "select",
+    },
   ],
 }
 `;
@@ -737,6 +761,30 @@ exports[`rendered question flow per literacy register > phase 2 — none 1`] = `
       "prompt": "Walk me through what someone does with this, start to finish, the first time they use it. Plain language — don't worry about being technical.",
       "type": "editor",
     },
+    {
+      "help": "Just the starting point — you can change your mind later.",
+      "id": "p2.ui.approach",
+      "options": [
+        {
+          "label": "Sketch the screens first (paper or a tool like Figma)",
+          "value": "sketch",
+        },
+        {
+          "label": "Use a component library (e.g. shadcn, MUI)",
+          "value": "component-library",
+        },
+        {
+          "label": "Generate a first pass with an AI UI tool (e.g. v0)",
+          "value": "ai-ui",
+        },
+        {
+          "label": "No plan yet — decide later",
+          "value": "none",
+        },
+      ],
+      "prompt": "How do you want to design the screens?",
+      "type": "select",
+    },
   ],
 }
 `;
@@ -751,6 +799,30 @@ exports[`rendered question flow per literacy register > phase 2 — some 1`] = `
       "id": "p2.capture",
       "prompt": "Walk me through a first-time user’s journey with this, start to finish.",
       "type": "editor",
+    },
+    {
+      "help": "Just the starting point — you can change your mind later.",
+      "id": "p2.ui.approach",
+      "options": [
+        {
+          "label": "Sketch the screens first (paper or a tool like Figma)",
+          "value": "sketch",
+        },
+        {
+          "label": "Use a component library (e.g. shadcn, MUI)",
+          "value": "component-library",
+        },
+        {
+          "label": "Generate a first pass with an AI UI tool (e.g. v0)",
+          "value": "ai-ui",
+        },
+        {
+          "label": "No plan yet — decide later",
+          "value": "none",
+        },
+      ],
+      "prompt": "How will you approach the UI?",
+      "type": "select",
     },
   ],
 }

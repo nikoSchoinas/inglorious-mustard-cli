@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderUseCases > renders a stable 02-USE-CASES.md 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 2
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: testsession01
+---
+
+# Use Cases & UI
+
+## Screens
+
+**Design approach:** sketch
+
+- Create habit
+- Sign in
+
+## Build order
+
+1. create habit (uc1)
+
+## Use cases
+
+### uc1 — create habit
+
+**Actor:** Member
+
+**Preconditions:**
+
+- User is signed in
+
+**Happy path**
+
+| Step | Actor | Action |
+| --- | --- | --- |
+| 1 | user | taps New Habit |
+| 2 | system | validates it |
+| 3 | database | stores it |
+
+**Failure paths**
+
+| Trigger | System response | What the user sees |
+| --- | --- | --- |
+| empty name | block the save | a validation error |
+"
+`;

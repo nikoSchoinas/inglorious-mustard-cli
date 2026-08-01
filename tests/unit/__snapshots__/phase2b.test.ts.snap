@@ -1,0 +1,87 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`runPhase2B — full replay run > snapshots the rendered 02-USE-CASES.md 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 2
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: dece44b8f7d3
+---
+
+# Use Cases & UI
+
+## Screens
+
+**Design approach:** sketch
+
+- Create habit
+- Sign in
+
+## Build order
+
+1. create habit (uc1)
+2. check in habit (uc2)
+3. set a reminder (uc3)
+
+## Use cases
+
+### uc1 — create habit
+
+**Actor:** Member
+
+**Happy path**
+
+| Step | Actor | Action |
+| --- | --- | --- |
+| 1 | user | taps New Habit and enters a name |
+| 2 | system | validates the name |
+| 3 | database | stores the new habit |
+| 4 | user | sees the habit in their list |
+
+**Failure paths**
+
+| Trigger | System response | What the user sees |
+| --- | --- | --- |
+| duplicate name | reject the duplicate | a message that the habit already exists |
+| empty name | block the save | a validation error asking for a name |
+
+### uc2 — check in habit
+
+**Actor:** Member
+
+**Happy path**
+
+| Step | Actor | Action |
+| --- | --- | --- |
+| 1 | user | opens a habit and taps Done for today |
+| 2 | system | records the check-in |
+| 3 | database | saves the check-in |
+
+**Failure paths**
+
+| Trigger | System response | What the user sees |
+| --- | --- | --- |
+| double check-in | ignore the second check-in | the habit shown as already done today |
+| offline | queue the check-in and sync later | a note that it will sync when back online |
+
+### uc3 — set a reminder
+
+**Actor:** Member
+
+**Happy path**
+
+| Step | Actor | Action |
+| --- | --- | --- |
+| 1 | user | opens a habit and sets a reminder time |
+| 2 | system | schedules the reminder |
+| 3 | external | sends a notification at the set time |
+
+**Failure paths**
+
+| Trigger | System response | What the user sees |
+| --- | --- | --- |
+| notification fails | retry once, then log it | nothing — the reminder is best-effort |
+| past time | schedule it for the next day | a note that the reminder starts tomorrow |
+"
+`;
