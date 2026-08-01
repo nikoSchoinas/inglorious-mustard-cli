@@ -12,6 +12,7 @@ import { type FailureQuestionsFn, createFailureQuestions } from './failure-quest
 import { type FailureStructureFn, createFailureStructure } from './failure-structure.js';
 import { type HappyPathFn, createHappyPath } from './happy-path.js';
 import { type OrderUseCasesFn, createOrderUseCases } from './order-use-cases.js';
+import { type ProposeEnumValuesFn, createProposeEnumValues } from './propose-enum-values.js';
 import { type SuggestCapabilitiesFn, createSuggestCapabilities } from './suggest-capabilities.js';
 import { createSynthesise } from './synthesise.js';
 
@@ -38,6 +39,8 @@ export interface Passes {
   failureStructure: FailureStructureFn;
   /** Phase 2B dependency-ordering pass (fast). */
   orderUseCases: OrderUseCasesFn;
+  /** Phase 3 per-enum-attribute value-proposal pass (fast) — owned by `runPhase3`. */
+  proposeEnumValues: ProposeEnumValuesFn;
 }
 
 export interface BuildPassesOptions {
@@ -79,5 +82,6 @@ export function buildPasses(config: MustardConfig, opts: BuildPassesOptions = {}
     failureQuestions: createFailureQuestions({ client, model: fastModel }),
     failureStructure: createFailureStructure({ client, model: fastModel }),
     orderUseCases: createOrderUseCases({ client, model: fastModel }),
+    proposeEnumValues: createProposeEnumValues({ client, model: fastModel }),
   };
 }
