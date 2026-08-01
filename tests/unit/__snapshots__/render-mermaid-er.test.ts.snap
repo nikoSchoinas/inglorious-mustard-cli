@@ -1,0 +1,33 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderErDiagram > renders entities, attributes and crows-foot relationships 1`] = `
+"\`\`\`mermaid
+erDiagram
+  User {
+    string email "required"
+    string status "required, enum"
+  }
+  Habit {
+    string title "required"
+  }
+  Tag {
+  }
+  User ||--o{ Habit : "relates to"
+  User ||--|| Tag : "relates to"
+  Habit }o--o{ Tag : "relates to"
+\`\`\`"
+`;
+
+exports[`renderErDiagram > survives hostile entity names with distinct, resolvable ids 1`] = `
+"\`\`\`mermaid
+erDiagram
+  end_ {
+    string id "required"
+  }
+  cafe {
+  }
+  end__2 {
+  }
+  end_ ||--o{ cafe : "relates to"
+\`\`\`"
+`;

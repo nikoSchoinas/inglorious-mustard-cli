@@ -1,0 +1,20 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`componentGraphFromStack > derives one node per decision, no edges 1`] = `
+"\`\`\`mermaid
+flowchart TD
+  fe["frontend: Next.js"]
+  db["database: Postgres"]
+\`\`\`"
+`;
+
+exports[`renderComponentDiagram > renders nodes and labelled edges 1`] = `
+"\`\`\`mermaid
+flowchart TD
+  web["Web App"]
+  api["API Server"]
+  db["Postgres"]
+  web -->|HTTPS| api
+  api --> db
+\`\`\`"
+`;

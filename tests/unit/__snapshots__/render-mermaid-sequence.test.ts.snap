@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderSequenceDiagram > renders participants, messages and failure notes 1`] = `
+"\`\`\`mermaid
+sequenceDiagram
+  participant User
+  participant System
+  participant Database
+  participant External
+  User->>System: taps "mark done"
+  System->>Database: validates the request
+  Database->>External: writes the log entry
+  External->>External: sends a push notification
+  Note over User: Failure — The push notification service is down → Nothing — the log still succeeds
+\`\`\`"
+`;
