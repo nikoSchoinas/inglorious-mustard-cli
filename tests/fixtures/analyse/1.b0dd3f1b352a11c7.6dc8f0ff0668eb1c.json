@@ -1,0 +1,35 @@
+{
+  "pass": "analyse",
+  "promptVersion": "1",
+  "schemaHash": "b0dd3f1b352a11c7c9aa7202444359501c0095017ad89ffd02798328823a1331",
+  "inputHash": "6dc8f0ff0668eb1c153e0848ad6fcd81fe74ad61d003bd1fc6e45d7a450b718a",
+  "recordedInput": {
+    "phase": 5,
+    "phaseName": "Architecture",
+    "literacy": "some",
+    "answers": [
+      {
+        "id": "p5.heavy-work",
+        "value": "server"
+      },
+      {
+        "id": "p5.data-sharing",
+        "value": true
+      }
+    ]
+  },
+  "response": {
+    "gaps": [
+      {
+        "id": "g1",
+        "severity": "important",
+        "description": "The heavy-work answer does not say how big the exports are.",
+        "suggestedQuestion": "Roughly how large is the biggest export a user might request?",
+        "suggestedType": "text"
+      }
+    ],
+    "contradictions": [],
+    "derivedFacts": [],
+    "readyToSynthesise": false
+  }
+}

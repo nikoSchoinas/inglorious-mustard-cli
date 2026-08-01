@@ -1,0 +1,163 @@
+{
+  "pass": "synthesise-architecture",
+  "promptVersion": "1",
+  "schemaHash": "102062f1178ec27e2b82d13ca781dd0ad66a83fdf450f99515d4173248c00b46",
+  "inputHash": "acee1f011cf505dceb2f5f0c46a97a4e90504acae4daa8df42606d6eabdc8c21",
+  "recordedInput": {
+    "phase": 5,
+    "literacy": "some",
+    "arch": {
+      "dataSharing": true,
+      "heavyWork": "server"
+    },
+    "needs": {
+      "auth": "email-password",
+      "objectStorage": true,
+      "payments": false
+    },
+    "context": {
+      "runTarget": "web",
+      "scale": "hundreds",
+      "sensitivity": "personal"
+    },
+    "stack": [
+      {
+        "componentId": "web-frontend",
+        "category": "frontend",
+        "choice": "Next.js"
+      },
+      {
+        "componentId": "primary-database",
+        "category": "database",
+        "choice": "PostgreSQL"
+      },
+      {
+        "componentId": "object-storage",
+        "category": "storage",
+        "choice": "Cloudflare R2"
+      },
+      {
+        "componentId": "authentication",
+        "category": "auth",
+        "choice": "Auth0"
+      }
+    ],
+    "models": [
+      {
+        "name": "Habit",
+        "description": "A habit being tracked"
+      },
+      {
+        "name": "CheckIn",
+        "description": "A daily completion record"
+      }
+    ],
+    "useCases": [
+      {
+        "id": "uc1",
+        "title": "Create a habit",
+        "failurePathCount": 2,
+        "actors": ["user", "system", "database"],
+        "dependsOn": []
+      },
+      {
+        "id": "uc2",
+        "title": "Check in on a habit",
+        "failurePathCount": 1,
+        "actors": ["user", "database"],
+        "dependsOn": ["uc1"]
+      }
+    ],
+    "answers": [
+      {
+        "id": "p5.heavy-work",
+        "value": "server"
+      },
+      {
+        "id": "p5.data-sharing",
+        "value": true
+      },
+      {
+        "id": "g1",
+        "value": "At most a few megabytes."
+      }
+    ]
+  },
+  "response": {
+    "componentGraph": {
+      "components": [
+        {
+          "id": "web",
+          "label": "Next.js web app",
+          "category": "frontend"
+        },
+        {
+          "id": "api",
+          "label": "API server",
+          "category": "backend"
+        },
+        {
+          "id": "db",
+          "label": "PostgreSQL",
+          "category": "database"
+        }
+      ],
+      "connections": [
+        {
+          "from": "web",
+          "to": "api",
+          "label": "HTTPS"
+        },
+        {
+          "from": "api",
+          "to": "db",
+          "label": "reads/writes"
+        }
+      ]
+    },
+    "sequenceSelections": [
+      {
+        "useCaseId": "uc1",
+        "failurePathCount": 2,
+        "crossComponentReach": 3,
+        "rationale": "Creating a habit has the most failure paths and touches every component."
+      },
+      {
+        "useCaseId": "uc2",
+        "failurePathCount": 1,
+        "crossComponentReach": 2,
+        "rationale": "Check-in is the highest-frequency flow, so its one failure path matters daily."
+      }
+    ],
+    "adrs": [
+      {
+        "id": "ADR-001",
+        "title": "Server-rendered monolith",
+        "status": "accepted",
+        "context": "A small habit tracker with modest scale and one primary actor.",
+        "decision": "Run a single Next.js app with an integrated API rather than separate services.",
+        "consequences": "Simplest to build and deploy; revisit only if scale demands separation."
+      }
+    ],
+    "irreversibleDecisions": [
+      {
+        "id": "IRR-1",
+        "title": "Authentication model",
+        "plainLanguage": "People sign in with an email and password you store yourself.",
+        "consequence": "Switching to Google/Apple sign-in later means migrating every account."
+      },
+      {
+        "id": "IRR-2",
+        "title": "Relational data model",
+        "plainLanguage": "Habits and check-ins live in tables with fixed columns.",
+        "consequence": "Reshaping to a document store later is a full data migration."
+      },
+      {
+        "id": "IRR-3",
+        "title": "Single-region hosting",
+        "plainLanguage": "Everything runs in one region close to your first users.",
+        "consequence": "Going multi-region later means re-architecting data residency."
+      }
+    ]
+  }
+}

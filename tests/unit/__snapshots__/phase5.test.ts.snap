@@ -1,0 +1,107 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`runPhase5 — full replay run > snapshots 05-ARCHITECTURE.md and 05-DECISIONS.md 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 5
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: dece44b8f7d3
+---
+
+# Architecture
+
+## Component diagram
+
+\`\`\`mermaid
+flowchart TD
+  web["Next.js web app"]
+  api["API server"]
+  db["PostgreSQL"]
+  web -->|HTTPS| api
+  api -->|reads/writes| db
+\`\`\`
+
+## Sequence diagrams — the riskiest flows
+
+### Create a habit
+
+_Why this flow: Creating a habit has the most failure paths and touches every component. (failure paths: 2, touches 3 components)._
+
+\`\`\`mermaid
+sequenceDiagram
+  participant User
+  participant System
+  participant Database
+  User->>System: fills in the habit form
+  System->>Database: validates the input
+  Database->>Database: stores the new habit
+  Note over User: Failure — empty name → asks for a name
+  Note over User: Failure — database is down → try again shortly
+\`\`\`
+
+### Check in on a habit
+
+_Why this flow: Check-in is the highest-frequency flow, so its one failure path matters daily. (failure paths: 1, touches 2 components)._
+
+\`\`\`mermaid
+sequenceDiagram
+  participant User
+  participant Database
+  User->>Database: taps check in
+  Database->>Database: records today’s completion
+  Note over User: Failure — already checked in today → already done today
+\`\`\`
+"
+`;
+
+exports[`runPhase5 — full replay run > snapshots 05-ARCHITECTURE.md and 05-DECISIONS.md 2`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 5
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: dece44b8f7d3
+---
+
+# Decisions
+
+## Architecture decision records
+
+### ADR-001 — Server-rendered monolith
+
+**Status:** accepted
+
+**Context.** A small habit tracker with modest scale and one primary actor.
+
+**Decision.** Run a single Next.js app with an integrated API rather than separate services.
+
+**Consequences.** Simplest to build and deploy; revisit only if scale demands separation.
+
+## Irreversible decisions — confirm before you build
+
+### IRR-1 — Authentication model
+
+People sign in with an email and password you store yourself.
+
+**If you change this later:** Switching to Google/Apple sign-in later means migrating every account.
+
+**Your call:** Confirmed ✓ on 2026-08-01T00:00:00.000Z
+
+### IRR-2 — Relational data model
+
+Habits and check-ins live in tables with fixed columns.
+
+**If you change this later:** Reshaping to a document store later is a full data migration.
+
+**Your call:** Confirmed ✓ on 2026-08-01T00:00:00.000Z
+
+### IRR-3 — Single-region hosting
+
+Everything runs in one region close to your first users.
+
+**If you change this later:** Going multi-region later means re-architecting data residency.
+
+**Not confirmed — revisit before building.**
+"
+`;
