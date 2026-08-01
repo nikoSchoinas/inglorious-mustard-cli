@@ -1,6 +1,7 @@
 import type { Literacy } from '../schemas/session.js';
 import { phase0 } from './bank/phase-0.js';
 import { phase1 } from './bank/phase-1.js';
+import { phase2 } from './bank/phase-2.js';
 import type { Facts, Phase, Question, QuestionOption } from './types.js';
 
 /**
@@ -15,7 +16,7 @@ import type { Facts, Phase, Question, QuestionOption } from './types.js';
  */
 
 /** The frozen bank: one module per phase, in order. */
-export const PHASES: readonly Phase[] = [phase0, phase1];
+export const PHASES: readonly Phase[] = [phase0, phase1, phase2];
 
 /**
  * Resolve a question's prompt for a literacy register, applying the fallback
