@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
 import { PRODUCT_NAME, SLOGAN } from './branding.js';
+import { buildConfigCommand } from './commands/config.js';
 
 /**
  * Read the package version at runtime. Resolving relative to `import.meta.url`
@@ -70,10 +71,7 @@ export function buildProgram(): Command {
     .description('Convert the bundle to another SDD tool layout.')
     .action(() => notYetImplemented('export'));
 
-  program
-    .command('config')
-    .description('Provider, keys, models.')
-    .action(() => notYetImplemented('config'));
+  program.addCommand(buildConfigCommand());
 
   return program;
 }
