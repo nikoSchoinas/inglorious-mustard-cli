@@ -1,6 +1,8 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import type { FailureQuestionsFn } from '../llm/passes/failure-questions.js';
+import {
+  type FailureQuestion,
+  FailureQuestions,
+  type FailureQuestionsFn,
+} from '../llm/passes/failure-questions.js';
 import type {
   FailureAnswer,
   FailurePath,
@@ -20,7 +22,17 @@ import type { UseCase } from '../schemas/use-case.js';
 import { type EditorLauncher, defaultEditorLauncher } from '../ui/editor.js';
 import type { Prompter } from '../ui/prompter.js';
 import { readVersion } from '../version.js';
-import { type IncomingFact, mergeFacts } from './facts.js';
+import { MissionHaltError } from './errors.js';
+import { applyFacts } from './facts.js';
+import {
+  type RunnerIO,
+  fileArtifactIO,
+  isAnswered,
+  makeAnswer,
+  phaseStateOf,
+  splitList,
+  withPhase,
+} from './orchestrator.js';
 import {
   deriveScreens,
   fallbackFailurePath,
@@ -34,8 +46,7 @@ import {
   wrapExtraction,
 } from './phase-2b-edit.js';
 import { orderTitlesToIds, repairOrder, topoOrder } from './phase-2b-order.js';
-import type { RunnerIO } from './runner.js';
-import { mustardDir, saveSession } from './session.js';
+import { saveSession } from './session.js';
 
 /**
  * Phase 2, part B (spec §8.5 steps 5–8; technical-plan §5, M9): happy paths → the
@@ -94,6 +105,8 @@ const UI_SCREENS = 'p2.ui.screens';
 const WRITE_DONE = 'p2.write';
 const happyMarker = (id: string): string => `p2.happy.${id}`;
 const failMarker = (id: string): string => `p2.fail.${id}`;
+const failQuestionsMarker = (id: string): string => `p2.failq.${id}`;
+const failAnswerMarker = (id: string, index: number): string => `p2.fail.${id}.${index}`;
 
 const ACCEPT_EDIT = [
   { value: 'accept', label: 'Accept' },
@@ -117,7 +130,7 @@ export async function runPhase2B(
   const { prompter } = deps;
 
   let current = save(
-    withPhase2(session, (_next, ps) => {
+    withPhase(session, PHASE, (_next, ps) => {
       if (ps.status === 'pending') {
         ps.status = 'in_progress';
       }
@@ -125,26 +138,46 @@ export async function runPhase2B(
   );
 
   // 0. SEED — wrap the part-A extraction into the working Phase2Output (idempotent).
-  if (!isAnswered(phase2State(current), SEEDED)) {
-    const extraction = DomainExtraction.parse(phase2State(current).synthesisedObject);
+  if (!isAnswered(phaseState(current), SEEDED)) {
+    const extraction = DomainExtraction.parse(phaseState(current).synthesisedObject);
     const output = wrapExtraction(extraction);
     current = save(
-      withPhase2(current, (_next, ps) => {
+      withPhase(current, PHASE, (_next, ps) => {
         ps.synthesisedObject = output;
-        ps.answers.push(answer(SEEDED, 'confirm', true, 'derived', now()));
+        ps.answers.push(makeAnswer(SEEDED, 'confirm', true, 'derived', now()));
       }),
     );
   }
 
   // Ids/titles/actors are stable from here; capture them once for the loops.
-  const useCases = readOutput(phase2State(current)).useCases;
+  const useCases = readOutput(phaseState(current)).useCases;
+
+  // GUARD — an empty use-case set (extraction degraded AND the user added nothing
+  // at reflection) must not sail through to an empty accepted bundle. Reset the
+  // phase so `mustard resume` restarts at the capture question, and stop loudly.
+  if (useCases.length === 0) {
+    prompter.note(
+      "I couldn't find any use cases in what we captured, so there is nothing to plan from yet. Let's take Phase 2 from the top — you'll get the description question again.",
+      'Nothing to work with',
+    );
+    save(
+      withPhase(current, PHASE, (_next, ps) => {
+        ps.answers = [];
+        ps.synthesisedObject = undefined;
+        ps.status = 'in_progress';
+      }),
+    );
+    throw new MissionHaltError(
+      'Phase 2 produced no use cases. Run `mustard resume` to describe your project again.',
+    );
+  }
 
   // 1. HAPPY PATH — per use case (§8.5 step 5), accept-or-edit. Persisted per uc.
   for (const uc of useCases) {
-    if (isAnswered(phase2State(current), happyMarker(uc.id))) {
+    if (isAnswered(phaseState(current), happyMarker(uc.id))) {
       continue;
     }
-    const output = readOutput(phase2State(current));
+    const output = readOutput(phaseState(current));
     const actor = resolveActor(output, uc.actorId);
     const outcome = await deps.happyPath(current, uc, actor);
     let steps: HappyStep[] = outcome.status === 'ok' ? outcome.value : [];
@@ -163,34 +196,61 @@ export async function runPhase2B(
     }
 
     current = save(
-      withPhase2(current, (_next, ps) => {
+      withPhase(current, PHASE, (_next, ps) => {
         ps.synthesisedObject = setHappyPath(readOutput(ps), uc.id, steps);
-        ps.answers.push(answer(happyMarker(uc.id), 'confirm', true, 'derived', now()));
+        ps.answers.push(makeAnswer(happyMarker(uc.id), 'confirm', true, 'derived', now()));
       }),
     );
   }
 
   // 2. FAILURE INTERROGATION — the signature feature (§8.5 step 6). Two fast passes
   // per use case: generate questions → user answers → structure into failure paths.
-  // Persisted per uc, and every use case ends with ≥ 1 failure path by construction.
+  // Durability is per ANSWER (§7.3.1), not per use case: the generated questions are
+  // persisted once (so a resume never re-generates a different set), and each typed
+  // answer is persisted the moment it is given — a mid-interrogation Ctrl-C loses
+  // nothing. Every use case ends with ≥ 1 failure path by construction.
   for (const uc of useCases) {
-    if (isAnswered(phase2State(current), failMarker(uc.id))) {
+    if (isAnswered(phaseState(current), failMarker(uc.id))) {
       continue;
     }
-    const output = readOutput(phase2State(current));
+    const output = readOutput(phaseState(current));
     const freshUc = output.useCases.find((u) => u.id === uc.id) ?? uc;
     const actor = resolveActor(output, freshUc.actorId);
 
-    const qOutcome = await deps.failureQuestions(current, freshUc, { name: actor.name });
-    const questions = qOutcome.status === 'ok' ? qOutcome.value : [];
+    // Questions: reuse the persisted set on resume; generate + persist otherwise.
+    let questions = readPersistedFailureQuestions(phaseState(current), uc.id);
+    if (questions === undefined) {
+      const qOutcome = await deps.failureQuestions(current, freshUc, { name: actor.name });
+      questions = qOutcome.status === 'ok' ? qOutcome.value : [];
+      const persisted = JSON.stringify(questions);
+      current = save(
+        withPhase(current, PHASE, (_next, ps) => {
+          ps.answers.push(
+            makeAnswer(failQuestionsMarker(uc.id), 'text', persisted, 'derived', now()),
+          );
+        }),
+      );
+    }
 
     let paths: FailurePath[];
     if (questions.length === 0) {
       paths = [fallbackFailurePath()];
     } else {
       const items: FailureAnswer[] = [];
-      for (const q of questions) {
-        const value = await prompter.text({ message: q.question });
+      for (const [i, q] of questions.entries()) {
+        const marker = failAnswerMarker(uc.id, i);
+        const existing = phaseState(current).answers.find((a) => a.questionId === marker);
+        let value: string;
+        if (existing !== undefined) {
+          value = String(existing.value); // already answered on a prior run
+        } else {
+          value = await prompter.text({ message: q.question });
+          current = save(
+            withPhase(current, PHASE, (_next, ps) => {
+              ps.answers.push(makeAnswer(marker, 'text', value, 'followup', now()));
+            }),
+          );
+        }
         items.push({ trigger: q.trigger, question: q.question, answer: value });
       }
       const sOutcome = await deps.failureStructure(current, freshUc, items);
@@ -204,16 +264,16 @@ export async function runPhase2B(
     }
 
     current = save(
-      withPhase2(current, (_next, ps) => {
+      withPhase(current, PHASE, (_next, ps) => {
         ps.synthesisedObject = setFailurePaths(readOutput(ps), uc.id, paths);
-        ps.answers.push(answer(failMarker(uc.id), 'confirm', true, 'derived', now()));
+        ps.answers.push(makeAnswer(failMarker(uc.id), 'confirm', true, 'derived', now()));
       }),
     );
   }
 
   // 3. DEPENDENCY ORDER — LLM proposes, user confirms (§8.5 step 7). Feeds Phase 6.
-  if (!isAnswered(phase2State(current), ORDER_DONE)) {
-    const output = readOutput(phase2State(current));
+  if (!isAnswered(phaseState(current), ORDER_DONE)) {
+    const output = readOutput(phaseState(current));
     const outcome = await deps.orderUseCases(current, output.useCases);
     const titles = outcome.status === 'ok' ? outcome.value : [];
     const proposed = repairOrder(orderTitlesToIds(titles, output.useCases), output.useCases);
@@ -223,15 +283,15 @@ export async function runPhase2B(
     const finalOrder = ok ? proposed : topoOrder(output.useCases);
 
     current = save(
-      withPhase2(current, (_next, ps) => {
+      withPhase(current, PHASE, (_next, ps) => {
         ps.synthesisedObject = setDependencyOrder(readOutput(ps), finalOrder);
-        ps.answers.push(answer(ORDER_DONE, 'confirm', ok, 'derived', now()));
+        ps.answers.push(makeAnswer(ORDER_DONE, 'confirm', ok, 'derived', now()));
       }),
     );
   }
 
   // 4a. UI — design approach (bank question, §8.5 step 8).
-  if (!isAnswered(phase2State(current), UI_APPROACH)) {
+  if (!isAnswered(phaseState(current), UI_APPROACH)) {
     const q = phase2.seed.find((s) => s.id === UI_APPROACH);
     if (q === undefined) {
       throw new Error('phase-2 bank is missing the UI approach question.');
@@ -242,20 +302,18 @@ export async function runPhase2B(
       options: q.options ?? [],
     });
     current = save(
-      withPhase2(current, (next, ps) => {
-        ps.answers.push(answer(UI_APPROACH, 'select', value, 'seed', now()));
+      withPhase(current, PHASE, (next, ps) => {
+        ps.answers.push(makeAnswer(UI_APPROACH, 'select', value, 'seed', now()));
         if (q.mapsTo !== undefined) {
-          next.facts = mergeFacts(next.facts, [
-            { key: q.mapsTo, value, source: 'answer' },
-          ]) as MustardSession['facts'];
+          applyFacts(next, [{ key: q.mapsTo, value, source: 'answer' }]);
         }
       }),
     );
   }
 
   // 4b. UI — screen inventory, derived from the use cases (§8.5 step 8).
-  if (!isAnswered(phase2State(current), UI_SCREENS)) {
-    const output = readOutput(phase2State(current));
+  if (!isAnswered(phaseState(current), UI_SCREENS)) {
+    const output = readOutput(phaseState(current));
     const candidates = deriveScreens(output.useCases);
     const picked =
       candidates.length > 0
@@ -270,18 +328,18 @@ export async function runPhase2B(
       }),
     );
     const screens = [...picked, ...custom];
-    const approach = readApproach(phase2State(current));
+    const approach = readApproach(phaseState(current));
     current = save(
-      withPhase2(current, (_next, ps) => {
+      withPhase(current, PHASE, (_next, ps) => {
         ps.synthesisedObject = setScreens(readOutput(ps), approach, screens);
-        ps.answers.push(answer(UI_SCREENS, 'multiselect', screens, 'seed', now()));
+        ps.answers.push(makeAnswer(UI_SCREENS, 'multiselect', screens, 'seed', now()));
       }),
     );
   }
 
   // 5. WRITE — render `02-USE-CASES.md`, review (accept / edit), write, accept phase.
-  if (!isAnswered(phase2State(current), WRITE_DONE)) {
-    const output = readOutput(phase2State(current));
+  if (!isAnswered(phaseState(current), WRITE_DONE)) {
+    const output = readOutput(phaseState(current));
     const rendered = registry.render(ARTIFACT, output, {
       phase: PHASE,
       sessionId: deriveSessionId(current),
@@ -304,12 +362,12 @@ export async function runPhase2B(
     io.writeArtifact(rendered.name, body);
 
     current = save(
-      withPhase2(current, (next, ps) => {
+      withPhase(current, PHASE, (next, ps) => {
         ps.status = 'accepted';
         ps.acceptedAt = now();
         ps.artifactPaths = [ARTIFACT];
         ps.edited = edited;
-        ps.answers.push(answer(WRITE_DONE, 'confirm', true, 'derived', now()));
+        ps.answers.push(makeAnswer(WRITE_DONE, 'confirm', true, 'derived', now()));
         next.currentPhase = Math.max(next.currentPhase, PHASE + 1);
       }),
     );
@@ -322,22 +380,9 @@ export async function runPhase2B(
 // Helpers
 // --------------------------------------------------------------------------
 
-function fileArtifactIO(): RunnerIO {
-  return {
-    writeArtifact(name, body) {
-      const dir = mustardDir();
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(join(dir, name), body, 'utf8');
-    },
-  };
-}
-
-function phase2State(session: MustardSession): PhaseState {
-  const ps = session.phases.find((p) => p.id === PHASE);
-  if (ps === undefined) {
-    throw new Error(`No PhaseState for phase ${PHASE} — runPhase2B should have created it.`);
-  }
-  return ps;
+/** Phase 2's state (throwing getter), phase-bound for the many call sites. */
+function phaseState(session: MustardSession): PhaseState {
+  return phaseStateOf(session, PHASE);
 }
 
 /** Read and validate the working Phase2Output. Only valid after the SEED step. */
@@ -358,6 +403,23 @@ function resolveActor(
     : { name: actorId, description: '' };
 }
 
+/**
+ * The failure questions persisted for a use case on a prior run, or `undefined`
+ * if they were never generated. Stored as a JSON answer so a resume interrogates
+ * with the SAME questions the user already saw — in `real` mode a re-generated
+ * set could differ, which would orphan the answers already given.
+ */
+function readPersistedFailureQuestions(
+  ps: PhaseState,
+  useCaseId: string,
+): FailureQuestion[] | undefined {
+  const stored = ps.answers.find((a) => a.questionId === failQuestionsMarker(useCaseId));
+  if (stored === undefined) {
+    return undefined;
+  }
+  return FailureQuestions.parse(JSON.parse(String(stored.value)));
+}
+
 function readApproach(ps: PhaseState): string {
   const value = ps.answers.find((a) => a.questionId === UI_APPROACH)?.value;
   return typeof value === 'string' ? value : '';
@@ -366,49 +428,4 @@ function readApproach(ps: PhaseState): string {
 function renderProposedOrder(orderIds: readonly string[], useCases: readonly UseCase[]): string {
   const byId = new Map(useCases.map((u) => [u.id, u.title]));
   return orderIds.map((id, i) => `${i + 1}. ${byId.get(id) ?? id}`).join('\n');
-}
-
-function isAnswered(ps: PhaseState, questionId: string): boolean {
-  return ps.answers.some((a) => a.questionId === questionId);
-}
-
-function answer(
-  questionId: string,
-  type: Answer['type'],
-  value: Answer['value'],
-  source: Answer['source'],
-  askedAt: string,
-): Answer {
-  return { questionId, type, value, source, askedAt };
-}
-
-/** Split a free-text addition on commas or newlines into trimmed, non-empty items. */
-function splitList(raw: string): string[] {
-  return raw
-    .split(/[\n,]/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-}
-
-/** Clone the session, ensure phase 2 exists, run `mutate`, return the new session. */
-function withPhase2(
-  session: MustardSession,
-  mutate: (next: MustardSession, ps: PhaseState) => void,
-): MustardSession {
-  const next = structuredClone(session);
-  let ps = next.phases.find((p) => p.id === PHASE);
-  if (ps === undefined) {
-    ps = {
-      id: PHASE,
-      status: 'pending',
-      answers: [],
-      followUpsAsked: 0,
-      analysisRuns: 0,
-      artifactPaths: [],
-      edited: false,
-    };
-    next.phases.push(ps);
-  }
-  mutate(next, ps);
-  return next;
 }

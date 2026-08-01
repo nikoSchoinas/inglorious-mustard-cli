@@ -195,10 +195,35 @@ export const CANCEL_2B_SCRIPT: ScriptedStep[] = [
   { kind: 'cancel' }, // Ctrl-C at uc2's first failure question
 ];
 
-/** The remaining answers on resume — identical values, so fixture keys still match. */
+/** The remaining answers on resume — identical values, so fixture keys still match.
+ * uc2's failure questions were persisted before the cancel, so they are NOT
+ * re-generated; the resume asks them from session state. */
 export const RESUME_2B_SCRIPT: ScriptedStep[] = [
-  { kind: 'text', value: FAIL_ANSWERS.uc2[0] }, // uc2 q1 (failure-questions uc2 re-runs)
+  { kind: 'text', value: FAIL_ANSWERS.uc2[0] }, // uc2 q1
   { kind: 'text', value: FAIL_ANSWERS.uc2[1] }, // uc2 q2
+  { kind: 'text', value: FAIL_ANSWERS.uc3[0] }, // uc3 q1
+  { kind: 'text', value: FAIL_ANSWERS.uc3[1] }, // uc3 q2
+  { kind: 'confirm', value: true },
+  { kind: 'select', value: 'sketch' },
+  { kind: 'multiselect', value: CHOSEN_SCREENS },
+  { kind: 'text', value: '' },
+  { kind: 'select', value: 'accept' },
+];
+
+/** Cancel MID-interrogation: uc2's first failure answer given, Ctrl-C at the second. */
+export const MID_FAIL_CANCEL_2B_SCRIPT: ScriptedStep[] = [
+  { kind: 'select', value: 'accept' }, // happy uc1
+  { kind: 'select', value: 'accept' }, // happy uc2
+  { kind: 'select', value: 'accept' }, // happy uc3
+  { kind: 'text', value: FAIL_ANSWERS.uc1[0] }, // uc1 q1
+  { kind: 'text', value: FAIL_ANSWERS.uc1[1] }, // uc1 q2 → uc1 done
+  { kind: 'text', value: FAIL_ANSWERS.uc2[0] }, // uc2 q1 — persisted on submission
+  { kind: 'cancel' }, // Ctrl-C at uc2 q2
+];
+
+/** Resume after MID_FAIL_CANCEL: uc2 q1 is NOT re-asked — only q2 and onward. */
+export const MID_FAIL_RESUME_2B_SCRIPT: ScriptedStep[] = [
+  { kind: 'text', value: FAIL_ANSWERS.uc2[1] }, // uc2 q2 only
   { kind: 'text', value: FAIL_ANSWERS.uc3[0] }, // uc3 q1
   { kind: 'text', value: FAIL_ANSWERS.uc3[1] }, // uc3 q2
   { kind: 'confirm', value: true },
@@ -252,6 +277,7 @@ export function phase2bStartSession(): MustardSession {
       },
     ],
     facts: { actorCount: 1 },
+    factSources: { actorCount: 'derived' },
     tasks: [],
     createdAt: ts,
     updatedAt: ts,

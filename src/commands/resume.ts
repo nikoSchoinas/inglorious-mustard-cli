@@ -1,3 +1,4 @@
+import { MissionHaltError } from '../engine/errors.js';
 import { SessionError, loadSession, saveSession } from '../engine/session.js';
 import type { MustardSession } from '../schemas/session.js';
 import { showBanner } from '../ui/banner.js';
@@ -38,6 +39,10 @@ export async function runResume(deps: CommandDeps = {}): Promise<void> {
     await driveMission(session, mission);
     prompter.note(`Mission bundle up to date in ${pc.cyan('mustard/')}.`, 'Done');
   } catch (err) {
+    if (err instanceof MissionHaltError) {
+      print(pc.yellow(err.message));
+      return exit(1);
+    }
     return handleCancellation(err, { print, exit });
   } finally {
     dispose?.();
