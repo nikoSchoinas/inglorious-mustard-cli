@@ -2,6 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { syncSessionIdentity } from '../engine/identity.js';
 import { type RunPhase2ADeps, runPhase2A as realRunPhase2A } from '../engine/phase-2a.js';
+import { type RunPhase2BDeps, runPhase2B as realRunPhase2B } from '../engine/phase-2b.js';
 import type { AnalyseFn, RunnerIO, SynthesiseFn } from '../engine/runner.js';
 import { runPhase } from '../engine/runner.js';
 import { mustardDir, saveSession } from '../engine/session.js';
@@ -50,6 +51,8 @@ export interface MissionDeps {
   buildPasses?: (config: MustardConfig, opts?: BuildPassesOptions) => Passes;
   /** Phase 2A orchestrator (M8). Injectable so tests can stub it. */
   runPhase2A?: (session: MustardSession, deps: RunPhase2ADeps) => Promise<MustardSession>;
+  /** Phase 2B orchestrator (M9). Injectable so tests can stub it. */
+  runPhase2B?: (session: MustardSession, deps: RunPhase2BDeps) => Promise<MustardSession>;
   setup?: (provider: Provider, deps: SetupDeps) => Promise<SetupResult>;
   // Passed through to the setup step:
   transport?: LLMTransport;
@@ -67,6 +70,7 @@ export async function driveMission(
   const save = deps.save ?? ((s: MustardSession) => saveSession(s, deps.cwd));
   const buildPasses = deps.buildPasses ?? realBuildPasses;
   const runPhase2A = deps.runPhase2A ?? realRunPhase2A;
+  const runPhase2B = deps.runPhase2B ?? realRunPhase2B;
   const setup = deps.setup ?? runSetup;
 
   // Phase 0 has no synthesis, so these are never called; guard loudly if they are.
@@ -120,10 +124,10 @@ export async function driveMission(
   // Phase 2A — Use Cases & UI, part A (M8): capture → extract → reflection →
   // capability loop. A bespoke orchestrator, not `runPhase` (§8.5 doesn't fit the
   // generic machine). It ends with a confirmed DomainExtraction in session state and
-  // leaves the phase `in_progress`; M9 (part B) adds synthesis and `02-USE-CASES.md`,
-  // and only then marks the phase accepted. Idempotent, so a resumed run no-ops once
-  // the capability loop is complete.
-  if (!isAccepted(current, 2)) {
+  // leaves the phase `in_progress`. The `!phase2bStarted` guard stops part A once
+  // part B has wrapped `synthesisedObject` into a `Phase2Output` (which part A would
+  // fail to re-parse as a `DomainExtraction`); until then, part A resumes normally.
+  if (!isAccepted(current, 2) && !phase2bStarted(current)) {
     current = await runPhase2A(current, {
       prompter: deps.prompter,
       extract: passes.extract,
@@ -134,7 +138,31 @@ export async function driveMission(
     current = save(syncSessionIdentity(current));
   }
 
+  // Phase 2B — Use Cases & UI, part B (M9): happy paths → the failure interrogation →
+  // dependency ordering → the UI step → `02-USE-CASES.md`. It wraps part A's
+  // extraction, fills it, renders, and marks the phase accepted. Idempotent.
+  if (!isAccepted(current, 2)) {
+    current = await runPhase2B(current, {
+      prompter: deps.prompter,
+      happyPath: passes.happyPath,
+      failureQuestions: passes.failureQuestions,
+      failureStructure: passes.failureStructure,
+      orderUseCases: passes.orderUseCases,
+      io,
+      editor: deps.editor,
+      now,
+      save,
+    });
+    current = save(syncSessionIdentity(current));
+  }
+
   return current;
+}
+
+/** True once Phase 2 part B has wrapped the extraction into a `Phase2Output`. */
+function phase2bStarted(session: MustardSession): boolean {
+  const ps = session.phases.find((p) => p.id === 2);
+  return ps?.answers.some((a) => a.questionId === 'p2b.seeded') ?? false;
 }
 
 function isAccepted(session: MustardSession, phaseId: number): boolean {
