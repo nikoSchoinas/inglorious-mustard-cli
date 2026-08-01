@@ -29,6 +29,16 @@ export const PhaseState = z.object({
   analysisRuns: z.number().int().default(0), // loop guard, max 2
   artifactPaths: z.array(z.string()).default([]),
   acceptedAt: z.iso.datetime().optional(),
+  // REVIEW-gate edit semantics (technical-plan §2.4, locked in M5). Additive and
+  // optional so existing sessions still parse and no LLM fixture is invalidated.
+  // `edited` flags that the user hand-edited the artifact in $EDITOR, so its
+  // markdown is now canonical and may diverge from `synthesisedObject`; later
+  // phases and `phase --redo` (M14) surface the staleness.
+  edited: z.boolean().default(false),
+  // The typed SYNTHESISE output, retained for downstream derivation even after an
+  // edit. `unknown` because the object type differs per phase (manifesto,
+  // DomainExtraction, StackDecision[], …).
+  synthesisedObject: z.unknown().optional(),
 });
 export type PhaseState = z.infer<typeof PhaseState>;
 

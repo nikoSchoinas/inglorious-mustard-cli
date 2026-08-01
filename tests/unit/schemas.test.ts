@@ -62,6 +62,9 @@ describe('session schemas', () => {
     expect(phase.followUpsAsked).toBe(0);
     expect(phase.analysisRuns).toBe(0);
     expect(phase.artifactPaths).toEqual([]);
+    // M5 additive fields default to their unedited/absent state.
+    expect(phase.edited).toBe(false);
+    expect(phase.synthesisedObject).toBeUndefined();
 
     const session = MustardSession.parse({
       schemaVersion: 1,
