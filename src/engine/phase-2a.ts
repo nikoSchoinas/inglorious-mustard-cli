@@ -6,9 +6,10 @@ import type {
 import { phase2 } from '../questions/bank/phase-2.js';
 import { resolvePrompt } from '../questions/index.js';
 import { DomainExtraction } from '../schemas/extraction.js';
-import type { Answer, MustardSession, PhaseState } from '../schemas/session.js';
+import type { MustardSession, PhaseState } from '../schemas/session.js';
 import type { Prompter } from '../ui/prompter.js';
-import { type IncomingFact, mergeFacts } from './facts.js';
+import { type IncomingFact, applyFacts } from './facts.js';
+import { isAnswered, makeAnswer, splitList, withPhase } from './orchestrator.js';
 import {
   addActor,
   addEntity,
@@ -70,7 +71,7 @@ export async function runPhase2A(
 
   // Ensure the PhaseState exists and is marked in_progress before any question.
   let current = save(
-    withPhase2(session, (_next, ps) => {
+    withPhase(session, PHASE, (_next, ps) => {
       if (ps.status === 'pending') {
         ps.status = 'in_progress';
       }
@@ -89,8 +90,8 @@ export async function runPhase2A(
       ...(minWordsValidate(q.validation?.minWords) ?? {}),
     });
     current = save(
-      withPhase2(current, (_next, ps) => {
-        ps.answers.push(answer(CAPTURE_ID, 'editor', value, 'seed', now()));
+      withPhase(current, PHASE, (_next, ps) => {
+        ps.answers.push(makeAnswer(CAPTURE_ID, 'editor', value, 'seed', now()));
       }),
     );
   }
@@ -106,7 +107,7 @@ export async function runPhase2A(
       );
     }
     current = save(
-      withPhase2(current, (_next, ps) => {
+      withPhase(current, PHASE, (_next, ps) => {
         ps.synthesisedObject = extraction;
       }),
     );
@@ -163,15 +164,15 @@ export async function runPhase2A(
 
     const confirmed = ex;
     current = save(
-      withPhase2(current, (next, ps) => {
+      withPhase(current, PHASE, (next, ps) => {
         ps.synthesisedObject = confirmed;
-        ps.answers.push(answer(REFLECTION_DONE, 'confirm', true, 'followup', now()));
+        ps.answers.push(makeAnswer(REFLECTION_DONE, 'confirm', true, 'derived', now()));
         // Derived: the confirmed actor count feeds later phases' `when` predicates
         // (e.g. phase-4's concurrency question reads `actorCount`).
         const incoming: IncomingFact[] = [
           { key: 'actorCount', value: confirmed.actors.length, source: 'derived' },
         ];
-        next.facts = mergeFacts(next.facts, incoming) as MustardSession['facts'];
+        applyFacts(next, incoming);
       }),
     );
   }
@@ -215,9 +216,9 @@ export async function runPhase2A(
       custom,
     );
     current = save(
-      withPhase2(current, (_next, ps) => {
+      withPhase(current, PHASE, (_next, ps) => {
         ps.synthesisedObject = merged;
-        ps.answers.push(answer(marker, 'confirm', true, 'followup', now()));
+        ps.answers.push(makeAnswer(marker, 'confirm', true, 'derived', now()));
       }),
     );
   }
@@ -245,28 +246,6 @@ function readExtraction(ps: PhaseState): DomainExtraction {
   return DomainExtraction.parse(ps.synthesisedObject);
 }
 
-function isAnswered(ps: PhaseState, questionId: string): boolean {
-  return ps.answers.some((a) => a.questionId === questionId);
-}
-
-function answer(
-  questionId: string,
-  type: Answer['type'],
-  value: Answer['value'],
-  source: Answer['source'],
-  askedAt: string,
-): Answer {
-  return { questionId, type, value, source, askedAt };
-}
-
-/** Split a free-text addition on commas or newlines into trimmed, non-empty items. */
-function splitList(raw: string): string[] {
-  return raw
-    .split(/[\n,]/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-}
-
 /** A clack-style validator from a bank question's `minWords`, wrapped for the spec's `validate`. */
 function minWordsValidate(
   min: number | undefined,
@@ -280,27 +259,4 @@ function minWordsValidate(
       return words >= min ? undefined : `Please write at least ${min} words (you wrote ${words}).`;
     },
   };
-}
-
-/** Clone the session, ensure phase 2 exists, run `mutate`, return the new session. */
-function withPhase2(
-  session: MustardSession,
-  mutate: (next: MustardSession, ps: PhaseState) => void,
-): MustardSession {
-  const next = structuredClone(session);
-  let ps = next.phases.find((p) => p.id === PHASE);
-  if (ps === undefined) {
-    ps = {
-      id: PHASE,
-      status: 'pending',
-      answers: [],
-      followUpsAsked: 0,
-      analysisRuns: 0,
-      artifactPaths: [],
-      edited: false,
-    };
-    next.phases.push(ps);
-  }
-  mutate(next, ps);
-  return next;
 }
