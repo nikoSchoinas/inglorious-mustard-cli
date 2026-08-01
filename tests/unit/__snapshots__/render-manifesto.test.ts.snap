@@ -1,0 +1,41 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderAiLaws > renders one law per line under frontmatter 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.1.0
+phase: 1
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: sess12345678
+---
+
+# AI Laws — Habit Tracker
+
+Rules the coding agent must follow when writing code for this project.
+
+- Write tests alongside every feature.
+- Never add a dependency without asking.
+"
+`;
+
+exports[`renderManifesto > renders values and mission under frontmatter 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.1.0
+phase: 1
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: sess12345678
+---
+
+# Habit Tracker — Manifesto
+
+## Why this exists
+
+People who want to build a daily habit have no simple, private place to track it.
+
+## What we live by
+
+1. **Ship before perfect** — A working slice beats a polished plan.
+2. **Stay true to your users** — Every decision serves the person tracking a habit.
+"
+`;
