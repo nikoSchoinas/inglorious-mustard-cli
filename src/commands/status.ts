@@ -1,5 +1,6 @@
 import { SessionError, loadSession } from '../engine/session.js';
 import { PHASES } from '../questions/index.js';
+import { StatusJson } from '../schemas/cli-json.js';
 import type { MustardSession, PhaseState } from '../schemas/session.js';
 import { pc } from '../ui/color.js';
 
@@ -49,8 +50,34 @@ export function formatStatus(session: MustardSession): string {
   return lines.join('\n');
 }
 
+/** Build the machine-readable `status --json` payload (spec §9.6, §11 v0.4). */
+export function buildStatusJson(session: MustardSession): StatusJson {
+  const phases = [...session.phases]
+    .sort((a, b) => a.id - b.id)
+    .map((ps) => ({
+      id: ps.id,
+      name: PHASE_NAMES[ps.id] ?? `Phase ${ps.id}`,
+      status: ps.status,
+      answers: ps.answers.length,
+      artifacts: ps.artifactPaths.length,
+    }));
+  return StatusJson.parse({
+    projectName: session.projectName,
+    literacy: session.literacy,
+    agentTarget: session.agentTarget,
+    currentPhase: session.currentPhase,
+    phases,
+    tasks: {
+      done: session.tasks.filter((t) => t.status === 'done').length,
+      total: session.tasks.length,
+    },
+  });
+}
+
 export interface StatusDeps {
   cwd?: string;
+  /** Emit machine-readable JSON instead of the human summary. */
+  json?: boolean;
   load?: (cwd?: string) => MustardSession;
   print?: (message: string) => void;
   exit?: (code: number) => never;
@@ -70,6 +97,11 @@ export async function runStatus(deps: StatusDeps = {}): Promise<void> {
       return exit(1);
     }
     throw err;
+  }
+
+  if (deps.json) {
+    print(JSON.stringify(buildStatusJson(session), null, 2));
+    return;
   }
 
   print(formatStatus(session));

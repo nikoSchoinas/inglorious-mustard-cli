@@ -8,7 +8,12 @@ import {
   saveConfig,
   writeKey,
 } from '../config/index.js';
-import { bundledDefaults, providerDocsUrl } from '../llm/manifest.js';
+import {
+  type ModelManifest,
+  bundledDefaults,
+  fetchRemoteManifest,
+  providerDocsUrl,
+} from '../llm/manifest.js';
 import type { ApiKeySource, MustardConfig, Provider } from '../schemas/config.js';
 import { pc } from '../ui/color.js';
 
@@ -157,7 +162,33 @@ export async function describeConfig(home?: string): Promise<string> {
   ].join('\n');
 }
 
-/** Build the `config` command with `show` (default) and `set` subcommands. */
+/**
+ * Human-readable model listing for `config models --list` (spec §9.6). Pure over the
+ * manifest and the current config, so it snapshot-tests deterministically. MUSTARD
+ * never asserts availability or price — the per-provider docs URL is the source of
+ * truth (spec §9.5); the current provider's row is marked.
+ */
+export function formatModels(manifest: ModelManifest, current?: MustardConfig | null): string {
+  const lines: string[] = [pc.bold('Model defaults by provider'), ''];
+  for (const [provider, entry] of Object.entries(manifest.providers)) {
+    if (!entry) {
+      continue;
+    }
+    const mark = current?.provider === provider ? pc.green(' (current)') : '';
+    lines.push(`${pc.cyan(provider)}${mark}`);
+    lines.push(`  fast  ${entry.fast}`);
+    lines.push(`  deep  ${entry.deep}`);
+    lines.push(`  docs  ${pc.dim(entry.docsUrl)}`);
+    lines.push('');
+  }
+  lines.push(
+    pc.dim('These are defaults, not promises — override any with `mustard config set` and'),
+  );
+  lines.push(pc.dim('confirm availability and pricing at each provider’s own documentation.'));
+  return lines.join('\n');
+}
+
+/** Build the `config` command with `show` (default), `set` and `models` subcommands. */
 export function buildConfigCommand(): Command {
   const config = new Command('config').description('Provider, keys, models.');
 
@@ -194,6 +225,20 @@ export function buildConfigCommand(): Command {
       }
       console.log(pc.green('Saved.'));
       console.log(await describeConfig());
+    });
+
+  config
+    .command('models')
+    .description('List available models per provider (remote manifest, bundled fallback).')
+    .option('--list', 'list the model defaults (this is the only mode)')
+    .action(async (_opts, cmd: Command) => {
+      const json = cmd.optsWithGlobals().json === true;
+      const manifest = await fetchRemoteManifest();
+      if (json) {
+        console.log(JSON.stringify(manifest, null, 2));
+        return;
+      }
+      console.log(formatModels(manifest, loadConfig()));
     });
 
   return config;
