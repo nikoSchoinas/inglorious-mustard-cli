@@ -5,6 +5,8 @@ import { type RunPhase2BDeps, runPhase2B as realRunPhase2B } from '../engine/pha
 import { type RunPhase3Deps, runPhase3 as realRunPhase3 } from '../engine/phase-3.js';
 import { type RunPhase4Deps, runPhase4 as realRunPhase4 } from '../engine/phase-4.js';
 import { type RunPhase5Deps, runPhase5 as realRunPhase5 } from '../engine/phase-5.js';
+import { type RunPhase6Deps, runPhase6 as realRunPhase6 } from '../engine/phase-6.js';
+import { type RunPhase7Deps, runPhase7 as realRunPhase7 } from '../engine/phase-7.js';
 import type { AnalyseFn, RunnerIO, SynthesiseFn } from '../engine/runner.js';
 import { runPhase } from '../engine/runner.js';
 import { saveSession } from '../engine/session.js';
@@ -13,6 +15,7 @@ import { buildPasses as realBuildPasses } from '../llm/passes/index.js';
 import type { LLMTransport } from '../llm/transport.js';
 import { phase0 } from '../questions/bank/phase-0.js';
 import { phase1 } from '../questions/bank/phase-1.js';
+import { fileAdapterIO } from '../render/adapters/io.js';
 import type { MustardConfig, Provider } from '../schemas/config.js';
 import type { MustardSession } from '../schemas/session.js';
 import type { EditorLauncher } from '../ui/editor.js';
@@ -28,8 +31,7 @@ import { runSetup } from './setup.js';
  * persisted `PhaseState`, so a resumed run skips accepted phases and the setup step
  * reuses a matching config — the walking skeleton (technical-plan §4).
  *
- * The driver runs Phase 0 → 0.5 setup → Phases 1–5; later milestones extend the
- * phase list here.
+ * The driver runs Phase 0 → 0.5 setup → Phases 1–7 — the full seven-phase mission.
  */
 
 const PROVIDERS = ['anthropic', 'openai', 'google', 'ollama'] as const;
@@ -62,6 +64,10 @@ export interface MissionDeps {
   runPhase4?: (session: MustardSession, deps: RunPhase4Deps) => Promise<MustardSession>;
   /** Phase 5 orchestrator (M12). Injectable so tests can stub it. */
   runPhase5?: (session: MustardSession, deps: RunPhase5Deps) => Promise<MustardSession>;
+  /** Phase 6 orchestrator (M13). Injectable so tests can stub it. */
+  runPhase6?: (session: MustardSession, deps: RunPhase6Deps) => Promise<MustardSession>;
+  /** Phase 7 orchestrator (M13). Injectable so tests can stub it. */
+  runPhase7?: (session: MustardSession, deps: RunPhase7Deps) => Promise<MustardSession>;
   setup?: (provider: Provider, deps: SetupDeps) => Promise<SetupResult>;
   // Passed through to the setup step:
   transport?: LLMTransport;
@@ -83,6 +89,8 @@ export async function driveMission(
   const runPhase3 = deps.runPhase3 ?? realRunPhase3;
   const runPhase4 = deps.runPhase4 ?? realRunPhase4;
   const runPhase5 = deps.runPhase5 ?? realRunPhase5;
+  const runPhase6 = deps.runPhase6 ?? realRunPhase6;
+  const runPhase7 = deps.runPhase7 ?? realRunPhase7;
   const setup = deps.setup ?? runSetup;
 
   // Phase 0 has no synthesis, so these are never called; guard loudly if they are.
@@ -236,6 +244,40 @@ export async function driveMission(
       synthesiseArchitecture: passes.synthesiseArchitecture,
       io,
       editor: deps.editor,
+      now,
+      save,
+    });
+    current = save(syncSessionIdentity(current));
+  }
+
+  // Phase 6 — Roadmap (M13): ask hours/week + testing policy, sequence the build
+  // into agent-sized tasks (deterministic topology), render `06-ROADMAP.md` and
+  // mirror the ordered tasks into `session.tasks`. A bespoke orchestrator, not
+  // `runPhase` (§8.9 has its own review shape). Idempotent.
+  if (!isAccepted(current, 6)) {
+    warnStaleEdits(6);
+    current = await runPhase6(current, {
+      prompter: deps.prompter,
+      analyse: passes.analyse,
+      sequence: passes.sequence,
+      io,
+      editor: deps.editor,
+      now,
+      save,
+    });
+    current = save(syncSessionIdentity(current));
+  }
+
+  // Phase 7 — Development & Documentation (M13): pure generation. Render a prompt
+  // card per task, the repo-root agent adapter (sentinel-merged), and the briefing
+  // last, behind a single bundle-level confirm. A bespoke orchestrator, not
+  // `runPhase` (§8.10 has no questions). Idempotent.
+  if (!isAccepted(current, 7)) {
+    current = await runPhase7(current, {
+      prompter: deps.prompter,
+      io,
+      // Adapter files are written at the repo root — honour the mission's cwd, as `io` does.
+      adapterIo: fileAdapterIO(deps.cwd),
       now,
       save,
     });

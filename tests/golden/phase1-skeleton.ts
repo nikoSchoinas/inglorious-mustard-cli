@@ -139,13 +139,15 @@ export function skeletonDeps(opts: SkeletonOptions): {
     installCancel: false,
     setup: async () => ({ config: CONFIG, apiKey: 'dummy' }),
     buildPasses: (config, o) => buildPasses(config, { ...o, transport: opts.transport }),
-    // The Phase 1 walking skeleton stops at Phase 1; Phase 2A/2B, Phase 3, Phase 4 and
-    // Phase 5 have their own golden fixtures and tests, so stub them out here as no-ops.
+    // The Phase 1 walking skeleton stops at Phase 1; Phases 2A/2B, 3, 4, 5 and 6
+    // have their own golden fixtures and tests, so stub them out here as no-ops.
     runPhase2A: async (session) => session,
     runPhase2B: async (session) => session,
     runPhase3: async (session) => session,
     runPhase4: async (session) => session,
     runPhase5: async (session) => session,
+    runPhase6: async (session) => session,
+    runPhase7: async (session) => session,
     ...(opts.exit ? { exit: opts.exit } : {}),
     ...(opts.print ? { print: opts.print } : {}),
   };
