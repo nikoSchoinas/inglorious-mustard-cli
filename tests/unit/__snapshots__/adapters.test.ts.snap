@@ -1,0 +1,26 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildAdapterBody > inlines the mission, the AI-LAWS, and the bundle pointers 1`] = `
+"# Habit Tracker — AI agent guide
+
+This project was planned with MUSTARD. The full plan lives in \`mustard/\`; read it before writing code.
+
+## Mission
+Help one person build a daily habit and see their streak.
+
+## Laws (non-negotiable)
+- Ship before perfect.
+- Tests alongside every feature.
+- No unrequested files.
+
+## Where to look
+- \`mustard/00-BRIEFING.md\` — one-page summary; start here
+- \`mustard/02-USE-CASES.md\` — what to build, and how each flow fails
+- \`mustard/03-SCHEMAS.md\` — the data model
+- \`mustard/04-STACK.md\` — the chosen stack and why
+- \`mustard/05-ARCHITECTURE.md\` — components and the riskiest flows
+- \`mustard/06-ROADMAP.md\` — the task sequence
+- \`mustard/07-PROMPTS/\` — a ready-to-paste prompt per task
+
+Build tasks in roadmap order. Run \`mustard prompts\` for the next unblocked task."
+`;
