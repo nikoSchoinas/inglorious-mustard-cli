@@ -31,3 +31,26 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+  smoke:
+    # M16 release-hardening (technical-plan §5): prove the packed tarball installs and runs a
+    # full mission from a clean install — locally and in a bare node:20 image. Offline, zero
+    # tokens, so it is safe to gate on (unlike the token-spending golden-nightly job).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pack + clean-install smoke (local + Docker clean-room)
+        run: pnpm smoke

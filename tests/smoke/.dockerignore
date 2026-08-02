@@ -1,0 +1,5 @@
+# Only the tarball, driver, and mission data are needed in the build context.
+run-smoke.sh
+serialize-mission.ts
+Dockerfile
+inglorious-mustard-*.tgz
