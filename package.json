@@ -3,13 +3,35 @@
   "version": "0.1.0",
   "description": "The CLI for the M.U.S.T.A.R.D. planning method — it extracts your spec instead of asking for one.",
   "license": "MIT",
+  "author": "Nikos Schoinas",
   "type": "module",
+  "keywords": [
+    "ai",
+    "spec-driven-development",
+    "planning",
+    "cli",
+    "claude-code",
+    "byok",
+    "agents",
+    "mustard"
+  ],
+  "homepage": "https://github.com/nikoSchoinas/inglorious-mustard-cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nikoSchoinas/inglorious-mustard-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nikoSchoinas/inglorious-mustard-cli/issues"
+  },
   "bin": {
     "mustard": "./dist/index.js"
   },
   "files": ["dist"],
   "engines": {
     "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "packageManager": "pnpm@11.18.0",
   "scripts": {
@@ -18,7 +40,12 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "smoke": "bash tests/smoke/run-smoke.sh",
+    "prepack": "pnpm build",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.25",
@@ -33,6 +60,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@changesets/cli": "^2.27.0",
     "@types/node": "^22.10.0",
     "jsdom": "^30.0.1",
     "mermaid": "^11.16.0",
