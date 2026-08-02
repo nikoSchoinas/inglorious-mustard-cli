@@ -35,6 +35,11 @@ export function fileArtifactIO(cwd?: string): RunnerIO {
   };
 }
 
+/** A writer that discards everything — the `--dry-run` sink (spec §9.6). */
+export function noopArtifactIO(): RunnerIO {
+  return { writeArtifact() {} };
+}
+
 /** The phase's state, throwing if the orchestrator has not created it yet. */
 export function phaseStateOf(session: MustardSession, id: number): PhaseState {
   const ps = session.phases.find((p) => p.id === id);

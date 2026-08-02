@@ -32,7 +32,12 @@ export async function runResume(deps: CommandDeps = {}): Promise<void> {
 
   showBanner(prompter);
 
-  const save = deps.save ?? ((s: MustardSession) => saveSession(s, deps.cwd));
+  // `--dry-run` (spec §9.6): write nothing. The driver no-op's its artifact IO; make
+  // the session save a no-op too so a resumed dry-run leaves the on-disk state untouched.
+  const dryRun = deps.dryRun ?? false;
+  const save =
+    deps.save ??
+    (dryRun ? (s: MustardSession) => s : (s: MustardSession) => saveSession(s, deps.cwd));
   const mission: MissionDeps = { ...deps, prompter, now, save, print, exit };
   const dispose = deps.installCancel === false ? undefined : installCancelHandler({ print, exit });
   try {

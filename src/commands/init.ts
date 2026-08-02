@@ -31,7 +31,12 @@ export async function runInit(deps: CommandDeps = {}): Promise<void> {
 
   showBanner(prompter);
 
-  const save = deps.save ?? ((s: MustardSession) => saveSession(s, deps.cwd));
+  // Under `--dry-run` nothing touches disk (spec §9.6), so skip the up-front persist
+  // that would otherwise create `mustard/`; the driver's own IO is no-op'd too.
+  const dryRun = deps.dryRun ?? false;
+  const save =
+    deps.save ??
+    (dryRun ? (s: MustardSession) => s : (s: MustardSession) => saveSession(s, deps.cwd));
   // Persist the fresh session up front: creates `mustard/` and guarantees resume.
   const session = save(freshSession(now));
 
