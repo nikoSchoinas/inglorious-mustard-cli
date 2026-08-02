@@ -1,0 +1,121 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`runPhase7 — full run (accepted bundle) > snapshots a prompt card, the adapter and the briefing > adapter-claude 1`] = `
+"<!-- MUSTARD:BEGIN -->
+# Habit Tracker — AI agent guide
+
+This project was planned with MUSTARD. The full plan lives in \`mustard/\`; read it before writing code.
+
+## Mission
+Help one person build a daily habit and actually see their streak grow.
+
+## Laws (non-negotiable)
+- Write tests alongside every feature.
+- Never add a dependency without asking.
+- Keep functions small and named for what they do.
+
+## Where to look
+- \`mustard/00-BRIEFING.md\` — one-page summary; start here
+- \`mustard/02-USE-CASES.md\` — what to build, and how each flow fails
+- \`mustard/03-SCHEMAS.md\` — the data model
+- \`mustard/04-STACK.md\` — the chosen stack and why
+- \`mustard/05-ARCHITECTURE.md\` — components and the riskiest flows
+- \`mustard/06-ROADMAP.md\` — the task sequence
+- \`mustard/07-PROMPTS/\` — a ready-to-paste prompt per task
+
+Build tasks in roadmap order. Run \`mustard prompts\` for the next unblocked task.
+<!-- MUSTARD:END -->
+"
+`;
+
+exports[`runPhase7 — full run (accepted bundle) > snapshots a prompt card, the adapter and the briefing > briefing 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 7
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: dece44b8f7d3
+---
+
+# Habit Tracker — Briefing
+
+## Mission
+
+Help one person build a daily habit and actually see their streak grow.
+
+## At a glance
+
+- **Use cases:** 2
+- **Roadmap tasks:** 5
+- **Agent guide:** \`CLAUDE.md\`
+
+## Stack
+
+- **frontend:** Next.js
+- **database:** PostgreSQL
+- **storage:** Cloudflare R2
+- **auth:** Auth0
+
+## The bundle
+
+Everything the plan produced lives in \`mustard/\`:
+
+- \`01-MANIFESTO.md\` / \`01-AI-LAWS.md\` — values and machine rules
+- \`02-USE-CASES.md\` — actors, happy paths, failure paths
+- \`03-SCHEMAS.md\` / \`03-STRUCTURE.md\` — data model and folder tree
+- \`04-STACK.md\` — technology choices and why
+- \`05-ARCHITECTURE.md\` / \`05-DECISIONS.md\` — diagrams and the decisions log
+- \`06-ROADMAP.md\` — the sequenced tasks
+- \`07-PROMPTS/\` — a ready-to-paste prompt per task
+
+## Next
+
+Run \`mustard prompts\` to get the first unblocked task, paste it into your agent, build it, and repeat.
+"
+`;
+
+exports[`runPhase7 — full run (accepted bundle) > snapshots a prompt card, the adapter and the briefing > prompt-card-T003 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 7
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: dece44b8f7d3
+---
+
+# T003 — Create a habit
+
+## Instruction
+
+Build **Create a habit**. Implement it fully and stop — this is one task in a sequenced roadmap, not the whole product.
+
+This task assumes T002 is already done.
+
+## Context — read these first
+
+- \`mustard/02-USE-CASES.md\`
+- \`mustard/03-SCHEMAS.md\`
+- \`mustard/04-STACK.md\`
+- \`mustard/05-ARCHITECTURE.md\`
+- \`mustard/06-ROADMAP.md\`
+
+## Acceptance criteria
+
+- [ ] A signed-in member can create a habit with a name.
+
+## Laws — apply all of these
+
+- Write tests alongside every feature.
+- Never add a dependency without asking.
+- Keep functions small and named for what they do.
+
+## Do not touch
+
+These belong to other tasks — leave them alone:
+- \`package.json\`
+- \`tsconfig.json\`
+- \`src/auth/session.ts\`
+- \`src/habits/checkin.ts\`
+- \`src/habits/streak.ts\`
+"
+`;

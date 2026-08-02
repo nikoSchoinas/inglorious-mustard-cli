@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import type { Answer, MustardSession, PhaseState } from '../schemas/session.js';
 import { mustardDir } from './session.js';
 
@@ -20,13 +20,17 @@ export interface RunnerIO {
   writeArtifact(name: string, body: string): void;
 }
 
-/** Default artifact writer: `mustard/<name>` under `cwd`, creating the dir if needed. */
+/**
+ * Default artifact writer: `mustard/<name>` under `cwd`, creating parent dirs as
+ * needed. `name` may be nested (e.g. `07-PROMPTS/T001-setup.md`), so the target's
+ * own directory — not just `mustard/` — is created.
+ */
 export function fileArtifactIO(cwd?: string): RunnerIO {
   return {
     writeArtifact(name, body) {
-      const dir = mustardDir(cwd);
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(join(dir, name), body, 'utf8');
+      const full = join(mustardDir(cwd), name);
+      mkdirSync(dirname(full), { recursive: true });
+      writeFileSync(full, body, 'utf8');
     },
   };
 }
