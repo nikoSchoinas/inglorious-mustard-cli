@@ -1,0 +1,52 @@
+name: Golden Nightly
+
+# The third testing layer (spec §10, technical-plan §5, M15): run the golden set against a
+# real provider, score each bundle with the LLM judge, and upload scores so prompt edits
+# show up as score movements. Secrets-gated and budget-capped — the ordinary CI workflow
+# (ci.yml) stays offline and key-free; this is the ONLY routine consumer of real tokens.
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # 03:00 UTC nightly
+  workflow_dispatch:
+    inputs:
+      max_projects:
+        description: 'Cap on how many golden projects to score (budget guard)'
+        required: false
+        default: '1'
+
+jobs:
+  golden:
+    runs-on: ubuntu-latest
+    # Only run the scheduled job where the API key secret exists (skips forks).
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run golden set (real provider, judged)
+        env:
+          MUSTARD_LLM_MODE: real
+          # Hard budget cap: default to 1 project nightly; dispatch can override.
+          MUSTARD_GOLDEN_MAX_PROJECTS: ${{ github.event.inputs.max_projects || '1' }}
+          MUSTARD_GOLDEN_OUT: golden-scores.json
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: pnpm exec tsx tests/golden/run.ts
+
+      - name: Upload scores
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-scores
+          path: golden-scores.json
+          if-no-files-found: warn
