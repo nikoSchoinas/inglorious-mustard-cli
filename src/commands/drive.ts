@@ -1,5 +1,5 @@
 import { syncSessionIdentity } from '../engine/identity.js';
-import { fileArtifactIO } from '../engine/orchestrator.js';
+import { fileArtifactIO, noopArtifactIO } from '../engine/orchestrator.js';
 import { type RunPhase2ADeps, runPhase2A as realRunPhase2A } from '../engine/phase-2a.js';
 import { type RunPhase2BDeps, runPhase2B as realRunPhase2B } from '../engine/phase-2b.js';
 import { type RunPhase3Deps, runPhase3 as realRunPhase3 } from '../engine/phase-3.js';
@@ -15,7 +15,7 @@ import { buildPasses as realBuildPasses } from '../llm/passes/index.js';
 import type { LLMTransport } from '../llm/transport.js';
 import { phase0 } from '../questions/bank/phase-0.js';
 import { phase1 } from '../questions/bank/phase-1.js';
-import { fileAdapterIO } from '../render/adapters/io.js';
+import { fileAdapterIO, memoryAdapterIO } from '../render/adapters/io.js';
 import type { MustardConfig, Provider } from '../schemas/config.js';
 import type { MustardSession } from '../schemas/session.js';
 import type { EditorLauncher } from '../ui/editor.js';
@@ -53,6 +53,12 @@ export interface MissionDeps {
   editor?: EditorLauncher;
   io?: RunnerIO;
   save?: (session: MustardSession) => MustardSession;
+  /**
+   * `--dry-run` (spec §9.6): run the interrogation, write nothing. When set, the
+   * default artifact IO, adapter IO and session save all become no-ops — nothing
+   * touches disk. Explicit `io`/`save` overrides (tests) still win.
+   */
+  dryRun?: boolean;
   buildPasses?: (config: MustardConfig, opts?: BuildPassesOptions) => Passes;
   /** Phase 2A orchestrator (M8). Injectable so tests can stub it. */
   runPhase2A?: (session: MustardSession, deps: RunPhase2ADeps) => Promise<MustardSession>;
@@ -81,8 +87,11 @@ export async function driveMission(
   deps: MissionDeps,
 ): Promise<MustardSession> {
   const now = deps.now ?? (() => new Date().toISOString());
-  const io = deps.io ?? fileArtifactIO(deps.cwd);
-  const save = deps.save ?? ((s: MustardSession) => saveSession(s, deps.cwd));
+  const dryRun = deps.dryRun ?? false;
+  const io = deps.io ?? (dryRun ? noopArtifactIO() : fileArtifactIO(deps.cwd));
+  const save =
+    deps.save ??
+    (dryRun ? (s: MustardSession) => s : (s: MustardSession) => saveSession(s, deps.cwd));
   const buildPasses = deps.buildPasses ?? realBuildPasses;
   const runPhase2A = deps.runPhase2A ?? realRunPhase2A;
   const runPhase2B = deps.runPhase2B ?? realRunPhase2B;
@@ -276,8 +285,9 @@ export async function driveMission(
     current = await runPhase7(current, {
       prompter: deps.prompter,
       io,
-      // Adapter files are written at the repo root — honour the mission's cwd, as `io` does.
-      adapterIo: fileAdapterIO(deps.cwd),
+      // Adapter files are written at the repo root — honour the mission's cwd, as `io`
+      // does. Under `--dry-run` the adapter goes to a throwaway in-memory sink.
+      adapterIo: dryRun ? memoryAdapterIO() : fileAdapterIO(deps.cwd),
       now,
       save,
     });
