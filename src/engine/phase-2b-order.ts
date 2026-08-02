@@ -1,11 +1,18 @@
 import type { UseCase } from '../schemas/use-case.js';
+import {
+  isValidOrder as genericIsValidOrder,
+  repairOrder as genericRepairOrder,
+  topoOrder as genericTopoOrder,
+} from './topo.js';
 
 /**
- * Pure dependency-ordering utilities for Phase 2 step 7 (spec §8.5). The LLM
- * proposes an order over use-case titles; this module maps those back to ids,
- * validates the result is a build-valid permutation, and repairs it deterministically
- * when it is not — so the "valid topological ordering" golden rubric (§10) holds by
- * construction and the order Phase 6 consumes is always complete.
+ * Dependency-ordering for Phase 2 step 7 (spec §8.5). The LLM proposes an order
+ * over use-case titles; this module maps those back to ids, then delegates the
+ * topological ordering/validation/repair to the generic `topo.ts` utilities
+ * (shared with Phase 6's task sequencing) so the "valid topological ordering"
+ * golden rubric (§10) holds by construction and the order Phase 6 consumes is
+ * always complete. Only `orderTitlesToIds` is `UseCase`-specific (it reads
+ * `title`); the rest are thin `UseCase`-typed re-exports.
  */
 
 /**
@@ -36,90 +43,17 @@ export function orderTitlesToIds(
   return order;
 }
 
-/**
- * True when `order` lists every use-case id exactly once (a permutation) AND every
- * use case's `dependsOn` ids appear before it. In M9 `dependsOn` is empty, so this
- * reduces to the permutation check — but the dependency check is enforced now so the
- * ordering stays correct if later work populates `dependsOn`.
- */
+/** See `topo.isValidOrder` — `UseCase` satisfies the `DependencyNode` shape. */
 export function isValidOrder(order: readonly string[], useCases: readonly UseCase[]): boolean {
-  const ids = useCases.map((u) => u.id);
-  if (order.length !== ids.length) {
-    return false;
-  }
-  const orderSet = new Set(order);
-  if (orderSet.size !== order.length) {
-    return false; // a duplicate
-  }
-  for (const id of ids) {
-    if (!orderSet.has(id)) {
-      return false; // a missing or unknown id
-    }
-  }
-  const position = new Map(order.map((id, i) => [id, i]));
-  for (const uc of useCases) {
-    const here = position.get(uc.id) ?? -1;
-    for (const dep of uc.dependsOn) {
-      const there = position.get(dep);
-      if (there === undefined || there > here) {
-        return false; // dependency comes after (or is unknown)
-      }
-    }
-  }
-  return true;
+  return genericIsValidOrder(order, useCases);
 }
 
-/**
- * A deterministic dependency-respecting order via Kahn's algorithm over `dependsOn`.
- * Ties break on the use cases' original order. A dependency cycle leaves nodes
- * unprocessable; those are appended in original order (a warning is the caller's
- * concern) rather than throwing — the interrogation must never dead-end.
- */
+/** See `topo.topoOrder` — `UseCase` satisfies the `DependencyNode` shape. */
 export function topoOrder(useCases: readonly UseCase[]): string[] {
-  const ids = useCases.map((u) => u.id);
-  const known = new Set(ids);
-  const indegree = new Map<string, number>(ids.map((id) => [id, 0]));
-  const dependents = new Map<string, string[]>(ids.map((id) => [id, []]));
-
-  for (const uc of useCases) {
-    for (const dep of uc.dependsOn) {
-      if (!known.has(dep)) {
-        continue; // ignore edges to unknown ids
-      }
-      indegree.set(uc.id, (indegree.get(uc.id) ?? 0) + 1);
-      dependents.get(dep)?.push(uc.id);
-    }
-  }
-
-  const order: string[] = [];
-  const placed = new Set<string>();
-  // Repeatedly take ready nodes (indegree 0) in original order, so ties are stable.
-  let progress = true;
-  while (progress) {
-    progress = false;
-    for (const id of ids) {
-      if (placed.has(id) || (indegree.get(id) ?? 0) !== 0) {
-        continue;
-      }
-      placed.add(id);
-      order.push(id);
-      progress = true;
-      for (const child of dependents.get(id) ?? []) {
-        indegree.set(child, (indegree.get(child) ?? 0) - 1);
-      }
-    }
-  }
-
-  // Any nodes left are in a cycle — append them in original order.
-  for (const id of ids) {
-    if (!placed.has(id)) {
-      order.push(id);
-    }
-  }
-  return order;
+  return genericTopoOrder(useCases);
 }
 
-/** Return `proposed` if it is a build-valid permutation, else the deterministic topo order. */
+/** See `topo.repairOrder` — `UseCase` satisfies the `DependencyNode` shape. */
 export function repairOrder(proposed: readonly string[], useCases: readonly UseCase[]): string[] {
-  return isValidOrder(proposed, useCases) ? [...proposed] : topoOrder(useCases);
+  return genericRepairOrder(proposed, useCases);
 }
