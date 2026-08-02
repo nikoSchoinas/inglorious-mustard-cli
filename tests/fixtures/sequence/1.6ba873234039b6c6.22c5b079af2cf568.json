@@ -1,0 +1,137 @@
+{
+  "pass": "sequence",
+  "promptVersion": "1",
+  "schemaHash": "6ba873234039b6c6461e7be22ba345b4db3362f44b2e63fdd08ad836f8d75fd1",
+  "inputHash": "22c5b079af2cf568d9c876259a671984cb016cd1bede95ebf6f43e1cdefd7cf7",
+  "recordedInput": {
+    "phase": 6,
+    "literacy": "some",
+    "roadmap": {
+      "hoursPerWeek": "under-5",
+      "testingPolicy": "critical"
+    },
+    "needs": {
+      "auth": "email-password",
+      "objectStorage": true,
+      "payments": false
+    },
+    "context": {
+      "runTarget": "web",
+      "scale": "hundreds",
+      "sensitivity": "personal"
+    },
+    "stack": [
+      {
+        "componentId": "web-frontend",
+        "category": "frontend",
+        "choice": "Next.js"
+      },
+      {
+        "componentId": "primary-database",
+        "category": "database",
+        "choice": "PostgreSQL"
+      },
+      {
+        "componentId": "object-storage",
+        "category": "storage",
+        "choice": "Cloudflare R2"
+      },
+      {
+        "componentId": "authentication",
+        "category": "auth",
+        "choice": "Auth0"
+      }
+    ],
+    "models": [
+      {
+        "name": "Habit",
+        "description": "A habit being tracked"
+      },
+      {
+        "name": "CheckIn",
+        "description": "A daily completion record"
+      }
+    ],
+    "components": [
+      {
+        "id": "web",
+        "label": "Next.js web app",
+        "category": "frontend"
+      },
+      {
+        "id": "api",
+        "label": "API server",
+        "category": "backend"
+      },
+      {
+        "id": "db",
+        "label": "PostgreSQL",
+        "category": "database"
+      }
+    ],
+    "useCases": [
+      {
+        "id": "uc1",
+        "title": "Create a habit",
+        "dependsOn": [],
+        "failurePathCount": 2
+      },
+      {
+        "id": "uc2",
+        "title": "Check in on a habit",
+        "dependsOn": ["uc1"],
+        "failurePathCount": 1
+      }
+    ],
+    "dependencyOrder": ["uc1", "uc2"]
+  },
+  "response": {
+    "tasks": [
+      {
+        "id": "T001",
+        "title": "Set up the project and CI",
+        "group": "setup",
+        "useCaseIds": [],
+        "dependsOn": [],
+        "acceptanceCriteria": ["The app builds and the test runner passes on CI."],
+        "filesTouched": ["package.json", "tsconfig.json"]
+      },
+      {
+        "id": "T003",
+        "title": "Create a habit",
+        "group": "feature",
+        "useCaseIds": ["uc1"],
+        "dependsOn": ["T002"],
+        "acceptanceCriteria": ["A signed-in member can create a habit with a name."],
+        "filesTouched": ["src/habits/create.ts"]
+      },
+      {
+        "id": "T002",
+        "title": "Add email/password auth",
+        "group": "auth",
+        "useCaseIds": [],
+        "dependsOn": ["T001"],
+        "acceptanceCriteria": ["A signed-out user is redirected to /login."],
+        "filesTouched": ["src/auth/session.ts"]
+      },
+      {
+        "id": "T004",
+        "title": "Check in on a habit",
+        "group": "feature",
+        "useCaseIds": ["uc2"],
+        "dependsOn": ["T003"],
+        "acceptanceCriteria": ["A member can mark a habit done for today exactly once."],
+        "filesTouched": ["src/habits/checkin.ts"]
+      },
+      {
+        "id": "T005",
+        "title": "Polish the streak view",
+        "group": "polish",
+        "useCaseIds": ["uc2"],
+        "dependsOn": ["T004"],
+        "acceptanceCriteria": ["The streak count is visible on the habit card."],
+        "filesTouched": ["src/habits/streak.ts"]
+      }
+    ]
+  }
+}

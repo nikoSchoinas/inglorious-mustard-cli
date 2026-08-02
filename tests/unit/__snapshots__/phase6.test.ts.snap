@@ -1,0 +1,75 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`runPhase6 — full replay run > snapshots 06-ROADMAP.md 1`] = `
+"---
+generated_by: mustard
+mustard_version: 0.0.0-test
+phase: 6
+generated_at: 2026-08-01T00:00:00.000Z
+session_id: dece44b8f7d3
+---
+
+# Roadmap
+
+**Time budget:** Under 5 hours per week  ·  **Testing policy:** Critical paths only
+
+Tasks are listed in dependency order — each is sized to fit a single agent prompt. Build them top to bottom; \`mustard prompts\` serves the unblocked ones as ready-to-paste cards.
+
+## Setup
+
+### T001 — Set up the project and CI
+
+**Acceptance criteria:**
+- The app builds and the test runner passes on CI.
+
+**Files touched:**
+- \`package.json\`
+- \`tsconfig.json\`
+
+## Auth
+
+### T002 — Add email/password auth
+
+**Depends on:** T001
+
+**Acceptance criteria:**
+- A signed-out user is redirected to /login.
+
+**Files touched:**
+- \`src/auth/session.ts\`
+
+## Features
+
+### T003 — Create a habit
+
+**Depends on:** T002  ·  **Use cases:** uc1
+
+**Acceptance criteria:**
+- A signed-in member can create a habit with a name.
+
+**Files touched:**
+- \`src/habits/create.ts\`
+
+### T004 — Check in on a habit
+
+**Depends on:** T003  ·  **Use cases:** uc2
+
+**Acceptance criteria:**
+- A member can mark a habit done for today exactly once.
+
+**Files touched:**
+- \`src/habits/checkin.ts\`
+
+## Polish
+
+### T005 — Polish the streak view
+
+**Depends on:** T004  ·  **Use cases:** uc2
+
+**Acceptance criteria:**
+- The streak count is visible on the habit card.
+
+**Files touched:**
+- \`src/habits/streak.ts\`
+"
+`;

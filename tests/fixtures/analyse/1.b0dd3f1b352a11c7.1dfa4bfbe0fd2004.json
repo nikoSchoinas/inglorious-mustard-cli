@@ -1,0 +1,35 @@
+{
+  "pass": "analyse",
+  "promptVersion": "1",
+  "schemaHash": "b0dd3f1b352a11c7c9aa7202444359501c0095017ad89ffd02798328823a1331",
+  "inputHash": "1dfa4bfbe0fd20044d796a513b34cd6f7add0f202a4f45bd53b8e8218117461a",
+  "recordedInput": {
+    "phase": 6,
+    "phaseName": "Roadmap",
+    "literacy": "some",
+    "answers": [
+      {
+        "id": "p6.hours-per-week",
+        "value": "under-5"
+      },
+      {
+        "id": "p6.testing-policy",
+        "value": "critical"
+      }
+    ]
+  },
+  "response": {
+    "gaps": [
+      {
+        "id": "g1",
+        "severity": "important",
+        "description": "The time budget does not say whether there is a hard launch deadline.",
+        "suggestedQuestion": "Is there a date this needs to be usable by?",
+        "suggestedType": "text"
+      }
+    ],
+    "contradictions": [],
+    "derivedFacts": [],
+    "readyToSynthesise": false
+  }
+}
