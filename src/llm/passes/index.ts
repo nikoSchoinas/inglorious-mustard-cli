@@ -16,6 +16,7 @@ import { type OrderUseCasesFn, createOrderUseCases } from './order-use-cases.js'
 import { type ProposeEnumValuesFn, createProposeEnumValues } from './propose-enum-values.js';
 import { type ProposeStackFn, createProposeStack } from './propose-stack.js';
 import { type ProposeStructureFn, createProposeStructure } from './propose-structure.js';
+import { type SequenceFn, createSequence } from './sequence.js';
 import { type SuggestCapabilitiesFn, createSuggestCapabilities } from './suggest-capabilities.js';
 import {
   type SynthesiseArchitectureFn,
@@ -56,6 +57,8 @@ export interface Passes {
   proposeStructure: ProposeStructureFn;
   /** Phase 5 architecture-synthesis pass (deep) — owned by `runPhase5`. */
   synthesiseArchitecture: SynthesiseArchitectureFn;
+  /** Phase 6 task-sequencing pass (deep) — owned by `runPhase6`. */
+  sequence: SequenceFn;
 }
 
 export interface BuildPassesOptions {
@@ -102,5 +105,6 @@ export function buildPasses(config: MustardConfig, opts: BuildPassesOptions = {}
     explainStack: createExplainStack({ client, model: fastModel }),
     proposeStructure: createProposeStructure({ client, model: fastModel }),
     synthesiseArchitecture: createSynthesiseArchitecture({ client, model: deepModel }),
+    sequence: createSequence({ client, model: deepModel }),
   };
 }
