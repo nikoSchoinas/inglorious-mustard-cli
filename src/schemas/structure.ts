@@ -13,10 +13,12 @@ import { z } from 'zod';
  */
 
 /**
- * One node in the tree. Recursive, so the AI SDK / Zod need the explicit type
- * annotation and `z.lazy` for the `children` self-reference. A `dir` may carry
- * `children`; a `file` never does (enforced by the renderer, not the schema, so a
- * loosely-shaped model reply still parses and degrades gracefully).
+ * One node in the tree. The TypeScript type is recursive (the renderer walks it
+ * to any depth), but the runtime schema below is NOT built with `z.lazy` — a
+ * self-referencing schema converts to a circular `$ref`, which Anthropic's
+ * `json_schema` structured-output format rejects outright ("Circular reference
+ * detected"). A `dir` may carry `children`; a `file` never does (enforced by the
+ * renderer, not the schema, so a loosely-shaped model reply still parses).
  */
 export interface FolderNode {
   name: string;
@@ -26,14 +28,35 @@ export interface FolderNode {
   children?: FolderNode[];
 }
 
-export const FolderNode: z.ZodType<FolderNode> = z.lazy(() =>
-  z.object({
+/**
+ * How deep the schema lets the tree nest. The `propose-structure` prompt asks for
+ * a "roughly 2–3 levels deep" starting skeleton; this leaves generous margin. The
+ * bound is what keeps the emitted JSON schema finite and acyclic — a plain nested
+ * object per level instead of a self-reference.
+ */
+const MAX_TREE_DEPTH = 6;
+
+/**
+ * Build the node schema by unrolling the recursion to a fixed depth. Each level
+ * is a distinct inline object, so the AI SDK emits a finite (acyclic) JSON schema
+ * the Anthropic API accepts — unlike `z.lazy`, which would self-reference.
+ */
+function folderNodeToDepth(remaining: number): z.ZodTypeAny {
+  const base = {
     name: z.string(),
     kind: z.enum(['dir', 'file']),
     description: z.string().optional(),
-    children: z.array(FolderNode).optional(),
-  }),
-);
+  };
+  if (remaining <= 1) {
+    return z.object(base);
+  }
+  return z.object({
+    ...base,
+    children: z.array(folderNodeToDepth(remaining - 1)).optional(),
+  });
+}
+
+export const FolderNode = folderNodeToDepth(MAX_TREE_DEPTH) as z.ZodType<FolderNode>;
 
 /** The whole proposed tree — the top-level entries of the project root. */
 export const FolderTree = z.array(FolderNode);

@@ -1,7 +1,7 @@
 {
   "pass": "propose-structure",
   "promptVersion": "1",
-  "schemaHash": "ac824fd3320037f9598d02992f6844a1867692601007c505d5e5ce6ef967fa8e",
+  "schemaHash": "f95f5ebc9f49ab46a94c25c22662431ec8c0f89ab6aedb67c224d2792b518085",
   "inputHash": "23339c9084d2c86d5449564a5751b41342f1622912f55723c2d1010d4e511fa9",
   "recordedInput": {
     "phase": 4,
@@ -24,7 +24,10 @@
         "choice": "Auth0"
       }
     ],
-    "models": ["Habit", "CheckIn"]
+    "models": [
+      "Habit",
+      "CheckIn"
+    ]
   },
   "response": [
     {
