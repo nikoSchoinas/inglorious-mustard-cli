@@ -7,7 +7,12 @@ import {
   isCancel,
 } from '@clack/prompts';
 import { pc } from './color.js';
-import { type EditorLauncher, defaultEditorLauncher } from './editor.js';
+import {
+  type EditorLauncher,
+  buildEditorBuffer,
+  defaultEditorLauncher,
+  extractAnswer,
+} from './editor.js';
 import {
   type ConfirmSpec,
   type EditorSpec,
@@ -77,15 +82,23 @@ export class ClackPrompter implements Prompter {
   }
 
   async editor(spec: EditorSpec): Promise<string> {
-    // Announce, then hand the terminal to the user's editor, then validate.
-    clackNote(this.withHelp(spec.message, spec.help));
+    // The editor owns the alternate screen, so any note printed before launch is
+    // wiped — the question is seeded into the buffer instead (see editor.ts).
+    let initial = spec.initial ?? '';
+    let error: string | undefined;
     for (;;) {
-      const value = await this.launcher.launch(spec.initial ?? '');
-      const error = spec.validate?.(value);
+      const buffer = buildEditorBuffer({
+        message: spec.message,
+        help: spec.help,
+        initial,
+        ...(error !== undefined ? { error } : {}),
+      });
+      const value = extractAnswer(await this.launcher.launch(buffer));
+      error = spec.validate?.(value);
       if (error === undefined) {
         return value;
       }
-      clackNote(pc.yellow(error));
+      initial = value; // re-seed with what they wrote so nothing is lost
     }
   }
 
