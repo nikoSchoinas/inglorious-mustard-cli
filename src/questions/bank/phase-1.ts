@@ -24,7 +24,6 @@ export const phase1: Phase = {
         developer: 'Problem statement: why build this, and who is underserved without it?',
       },
       help: 'A few sentences. Write for a person, not a pitch deck.',
-      validation: { minWords: 30 },
     },
     {
       id: 'p1.name',

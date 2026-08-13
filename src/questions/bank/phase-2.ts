@@ -33,7 +33,6 @@ export const phase2: Phase = {
         developer: 'Describe the primary end-to-end user flow on first use.',
       },
       help: "Just tell the story. We'll pull out the actors and moving parts for you.",
-      validation: { minWords: 30 },
     },
     {
       // Part B, step 8 (§8.5): how the user intends to approach the UI. Asked here so
