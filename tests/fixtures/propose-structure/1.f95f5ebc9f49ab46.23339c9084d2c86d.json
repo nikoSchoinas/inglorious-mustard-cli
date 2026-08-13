@@ -24,10 +24,7 @@
         "choice": "Auth0"
       }
     ],
-    "models": [
-      "Habit",
-      "CheckIn"
-    ]
+    "models": ["Habit", "CheckIn"]
   },
   "response": [
     {

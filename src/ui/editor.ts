@@ -21,8 +21,7 @@ export interface EditorLauncher {
  * split on this delimiter (not on `# ` prefixes) so answers may freely contain
  * Markdown `#` headings without being eaten.
  */
-export const ANSWER_DELIMITER =
-  '# ──── write your answer below this line ────';
+export const ANSWER_DELIMITER = '# ──── write your answer below this line ────';
 
 /** Prefix a block of (possibly multi-line) text as `# ` comment lines. */
 function commentLines(text: string): string[] {

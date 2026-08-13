@@ -61,7 +61,11 @@ describe('ScriptedPrompter drives every prompt type', () => {
 
 describe('editor buffer seeds the question and strips it back out', () => {
   it('buildEditorBuffer comments the message/help above the delimiter, answer below', () => {
-    const buffer = buildEditorBuffer({ message: 'Why?', help: 'A few sentences.', initial: 'seed' });
+    const buffer = buildEditorBuffer({
+      message: 'Why?',
+      help: 'A few sentences.',
+      initial: 'seed',
+    });
     const lines = buffer.split('\n');
     const delimiter = lines.indexOf(ANSWER_DELIMITER);
     expect(lines[0]).toBe('# Why?');
