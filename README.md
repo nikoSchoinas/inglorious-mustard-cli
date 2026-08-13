@@ -3,12 +3,12 @@
 **Every spec-driven tool assumes you can write a spec. MUSTARD assumes you can answer questions.**
 
 MUSTARD is a seven-phase planning method for building software with AI agents. This CLI
-operationalises it: it runs a **structured interrogation** — fixed multiple-choice questions,
-free-text answers analysed by an LLM, and derived technical proposals — and emits a complete
+operationalises it: it runs a **structured interrogation** with fixed multiple-choice questions,
+free-text answers analysed by an LLM, and derived technical proposals, and emits a complete
 planning bundle plus a queue of ready-to-paste prompts for your coding agent.
 
 It **extracts** the specification instead of asking you to write one. It is bring-your-own-key,
-free, open source, and agent-neutral. It does not write your application code — it makes you
+free, open source, and agent-neutral. It does not write your application code but it makes you
 capable of directing an agent that does.
 
 ```
@@ -54,9 +54,6 @@ Plus an adapter file at your repo root for the agent you chose — `CLAUDE.md`, 
 | 6 | **R**oadmap | Dependency-ordered, agent-sized tasks |
 | 7 | **D**evelopment & docs | Prompt cards, adapter files, briefing |
 
-The signature moment is the **failure interrogation** in Phase 2: for every use case the tool
-asks what happens when it goes wrong ("someone pays but the confirmation email fails — what do
-they see?"). It is where a non-technical builder visibly learns something in the first 20 minutes.
 
 ## Bring your own key
 
@@ -68,14 +65,13 @@ Supported providers: **Anthropic**, **OpenAI**, **Google**, and **Ollama** (loca
 Configure once:
 
 ```
-mustard config set          # provider, models, API key, telemetry
+mustard config set          # provider, models, API key
 mustard config show         # current provider, models, key source
 mustard config models --list
 ```
 
 Keys are resolved in order: environment variable → `~/.mustard/config.json` (mode `0600`) →
-your OS keyring (optional). Nothing is ever sent anywhere but your chosen provider. Telemetry is
-**opt-in, off by default**.
+your OS keyring (optional). Nothing is ever sent anywhere but your chosen provider.
 
 ## Commands
 
@@ -111,4 +107,4 @@ Releases use [changesets](https://github.com/changesets/changesets) — see
 
 ## Licence
 
-MIT. Based on the M.U.S.T.A.R.D. method by Nikos Schoinas.
+MIT. Based on the [M.U.S.T.A.R.D. method](https://github.com/nikoSchoinas/inglorious-mustard) by Nikos Schoinas.
