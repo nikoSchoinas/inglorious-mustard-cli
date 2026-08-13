@@ -1,7 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SessionError, loadSession, mustardDir } from '../engine/session.js';
-import { unblockedTasks } from '../engine/tasks.js';
 import { promptCardFilename } from '../render/markdown/prompt-card.js';
 import { PromptsJson } from '../schemas/cli-json.js';
 import type { MustardSession } from '../schemas/session.js';
@@ -91,23 +90,17 @@ export async function runPrompts(deps: PromptsDeps = {}): Promise<void> {
     return;
   }
 
-  const ready = unblockedTasks(session.tasks);
-  if (ready.length === 0) {
-    const done = session.tasks.every((t) => t.status === 'done');
-    prompter.note(
-      done
-        ? 'Every task is done. Nice work.'
-        : 'No unblocked tasks right now — finish an in-progress task to unlock the next ones.',
-      done ? 'All clear' : 'Blocked',
-    );
-    return;
-  }
-
+  // Every task is offered, in roadmap order — the picker no longer gates on
+  // dependency readiness, so any prompt card can be pulled up at any time. The
+  // `dependsOn` order still reflects the recommended build sequence.
   const choice = await prompter.select({
     message: 'Which task do you want to build next?',
-    options: ready.map((t) => ({ value: t.id, label: `${t.id} — ${t.title}` })),
+    options: session.tasks.map((t) => ({
+      value: t.id,
+      label: `${t.id} — ${t.title}${t.status === 'done' ? ' (done)' : ''}`,
+    })),
   });
-  const task = ready.find((t) => t.id === choice);
+  const task = session.tasks.find((t) => t.id === choice);
   // `select` only ever returns one of the offered values; guard for exhaustiveness.
   if (!task) {
     return;

@@ -116,15 +116,17 @@ describe('runPrompts (interactive)', () => {
     expect(h.prompter.notes.some((n) => n.title === 'Nothing to build')).toBe(true);
   });
 
-  it('notes when no task is unblocked but work remains', async () => {
-    // T002 waits on the in-progress T001; T001 itself waits on an unfinished T000,
-    // so nothing is ready yet and not everything is done.
-    const tasks = [
-      task('T001', { status: 'todo', dependsOn: ['T000'] }),
-      task('T000', { status: 'in_progress', dependsOn: ['Tx'] }),
-    ];
-    const h = run({ tasks });
+  it('offers every task regardless of dependency readiness (no gating)', async () => {
+    // T002 depends on the still-todo T001, so under the old gating it would have
+    // been hidden. The picker now offers it, and its card prints when chosen.
+    const tasks = [task('T001', { status: 'todo' }), task('T002', { dependsOn: ['T001'] })];
+    const h = run({
+      tasks,
+      script: [{ kind: 'select', value: 'T002' }],
+      readCard: () => 'CARD BODY',
+      copy: async () => true,
+    });
     await h.promise;
-    expect(h.prompter.notes.some((n) => n.title === 'Blocked')).toBe(true);
+    expect(h.printed).toContain('CARD BODY');
   });
 });
