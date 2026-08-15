@@ -63,6 +63,12 @@ export interface LLMClientOptions {
   backoff?: (attempt: number) => number;
   /** Injected for tests to avoid real waits. */
   sleep?: (ms: number) => Promise<void>;
+  /**
+   * Optional loading-indicator hook. Called once when a `generate` begins and
+   * expected to return a stop function invoked when it settles (across retries).
+   * Production wires the mustard spinner; tests/replay omit it so nothing draws.
+   */
+  onActivityStart?: () => () => void;
 }
 
 const realSleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
@@ -75,6 +81,7 @@ export class LLMClient {
   private readonly transientRetries: number;
   private readonly backoff: (attempt: number) => number;
   private readonly sleep: (ms: number) => Promise<void>;
+  private readonly onActivityStart?: () => () => void;
 
   constructor(opts: LLMClientOptions) {
     this.transport = opts.transport;
@@ -82,6 +89,7 @@ export class LLMClient {
     this.transientRetries = opts.transientRetries ?? DEFAULT_TRANSIENT_RETRIES;
     this.backoff = opts.backoff ?? ((n) => 500 * 2 ** (n - 1));
     this.sleep = opts.sleep ?? realSleep;
+    this.onActivityStart = opts.onActivityStart;
   }
 
   async generate<T>(args: GenerateArgs<T>): Promise<LlmOutcome<T>> {
@@ -90,49 +98,55 @@ export class LLMClient {
     let schemaRetried = false;
     let transientAttempt = 0;
 
-    while (true) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        const { object } = await this.transport.generate({
-          pass: args.pass,
-          promptVersion: args.system.version,
-          model: args.model,
-          system: args.system.text,
-          prompt,
-          input: args.input,
-          schema: args.schema,
-          abortSignal: controller.signal,
-        });
-        return { status: 'ok', value: object };
-      } catch (err) {
-        const kind = classify(err, controller.signal.aborted);
+    // One indicator per call, spanning any retries; no-op when unwired.
+    const stopActivity = this.onActivityStart?.();
+    try {
+      while (true) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const { object } = await this.transport.generate({
+            pass: args.pass,
+            promptVersion: args.system.version,
+            model: args.model,
+            system: args.system.text,
+            prompt,
+            input: args.input,
+            schema: args.schema,
+            abortSignal: controller.signal,
+          });
+          return { status: 'ok', value: object };
+        } catch (err) {
+          const kind = classify(err, controller.signal.aborted);
 
-        if (kind === 'schema') {
-          if (!schemaRetried) {
-            // One corrective retry: show the model exactly what failed.
-            schemaRetried = true;
-            prompt = `${args.prompt}\n\nYour previous reply did not satisfy the required schema:\n${describeError(err)}\nReturn a value that satisfies the schema exactly.`;
-            continue;
+          if (kind === 'schema') {
+            if (!schemaRetried) {
+              // One corrective retry: show the model exactly what failed.
+              schemaRetried = true;
+              prompt = `${args.prompt}\n\nYour previous reply did not satisfy the required schema:\n${describeError(err)}\nReturn a value that satisfies the schema exactly.`;
+              continue;
+            }
+            return { status: 'degraded', reason: describeError(err) };
           }
-          return { status: 'degraded', reason: describeError(err) };
-        }
 
-        if (kind === 'transient') {
-          transientAttempt++;
-          if (transientAttempt <= this.transientRetries) {
-            await this.sleep(this.backoff(transientAttempt));
-            continue;
+          if (kind === 'transient') {
+            transientAttempt++;
+            if (transientAttempt <= this.transientRetries) {
+              await this.sleep(this.backoff(transientAttempt));
+              continue;
+            }
           }
-        }
 
-        throw new LlmUnavailableError(
-          `LLM call failed for pass "${args.pass}" after ${transientAttempt + 1} attempt(s).`,
-          { cause: err, attempts: transientAttempt + 1 },
-        );
-      } finally {
-        clearTimeout(timer);
+          throw new LlmUnavailableError(
+            `LLM call failed for pass "${args.pass}" after ${transientAttempt + 1} attempt(s).`,
+            { cause: err, attempts: transientAttempt + 1 },
+          );
+        } finally {
+          clearTimeout(timer);
+        }
       }
+    } finally {
+      stopActivity?.();
     }
   }
 }
