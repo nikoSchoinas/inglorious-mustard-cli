@@ -65,10 +65,13 @@ Supported providers: **Anthropic**, **OpenAI**, **Google**, and **Ollama** (loca
 Configure once:
 
 ```
-mustard config set          # provider, models, API key
-mustard config show         # current provider, models, key source
+mustard config set          # provider, model, API key
+mustard config show         # current provider, model, key source
 mustard config models --list
 ```
+
+Every LLM call uses one model — your provider's strong tier by default, overridable with
+`mustard config set --deep <model>`.
 
 Keys are resolved in order: environment variable → `~/.mustard/config.json` (mode `0600`) →
 your OS keyring (optional). Nothing is ever sent anywhere but your chosen provider.
@@ -81,7 +84,7 @@ your OS keyring (optional). Nothing is ever sent anywhere but your chosen provid
 | `mustard resume` | Continue from the exact question where you stopped. |
 | `mustard status` / `sitrep` | Phase progress, tasks done/total. |
 | `mustard phase <n> --redo` | Re-run a phase; warns which downstream artifacts go stale. |
-| `mustard prompts` | List prompt cards; print the selected unblocked card (with clipboard copy). |
+| `mustard prompts` | List prompt cards; print the selected card (with clipboard copy). Cards are listed in recommended build order; `--json` flags which are still blocked by dependencies. |
 | `mustard config` | Provider, keys, models. |
 
 Global flags: `--no-color`, `--json` (machine-readable output), `--dry-run` (interrogate, write
@@ -100,7 +103,13 @@ pnpm test         # vitest
 pnpm typecheck
 pnpm lint         # biome
 pnpm smoke        # pack the tarball + run a full mission from a clean install
+pnpm golden       # golden-set scoring (offline rubric by default)
 ```
+
+The golden set is the safety net for prompt edits. `pnpm golden` runs the deterministic
+rubric offline; before merging a change to any system prompt, run it against a real
+provider — `MUSTARD_LLM_MODE=real pnpm golden` (spends tokens; cap with
+`MUSTARD_GOLDEN_MAX_PROJECTS=<n>`) — and compare `golden-scores.json` against `main`.
 
 Releases use [changesets](https://github.com/changesets/changesets) — see
 [`docs/releasing.md`](docs/releasing.md).
