@@ -3,6 +3,7 @@ import { createRendererRegistry } from '../../render/register.js';
 import type { RendererRegistry } from '../../render/registry.js';
 import type { MustardConfig } from '../../schemas/config.js';
 import { readVersion } from '../../version.js';
+import { activityHook } from '../activity.js';
 import { LLMClient, type LLMClientOptions } from '../client.js';
 import { createModelForTier } from '../router.js';
 import { type LLMTransport, createTransport, modeFromEnv } from '../transport.js';
@@ -78,33 +79,37 @@ export interface BuildPassesOptions {
 }
 
 export function buildPasses(config: MustardConfig, opts: BuildPassesOptions = {}): Passes {
-  const transport = opts.transport ?? createTransport(modeFromEnv());
-  const client = opts.client ?? new LLMClient({ transport, ...opts.clientOptions });
+  const mode = modeFromEnv();
+  const transport = opts.transport ?? createTransport(mode);
+  const client =
+    opts.client ??
+    new LLMClient({ transport, onActivityStart: activityHook(mode), ...opts.clientOptions });
 
-  const fastModel = createModelForTier(config, 'fast', { apiKey: opts.apiKey });
-  const deepModel = createModelForTier(config, 'deep', { apiKey: opts.apiKey });
+  // Every pass runs on the good (deep) model — the fast tier misbehaved, so it's
+  // no longer used for model selection (the per-pass `tier` still drives timeouts).
+  const model = createModelForTier(config, 'deep', { apiKey: opts.apiKey });
   const registry = opts.registry ?? createRendererRegistry();
 
   return {
-    analyse: createAnalyse({ client, model: fastModel }),
+    analyse: createAnalyse({ client, model }),
     synthesise: createSynthesise({
       client,
-      model: deepModel,
+      model,
       mustardVersion: opts.mustardVersion ?? readVersion(),
       now: opts.now ?? (() => new Date().toISOString()),
       registry,
     }),
-    extract: createExtract({ client, model: fastModel }),
-    suggestCapabilities: createSuggestCapabilities({ client, model: fastModel }),
-    happyPath: createHappyPath({ client, model: fastModel }),
-    failureQuestions: createFailureQuestions({ client, model: fastModel }),
-    failureStructure: createFailureStructure({ client, model: fastModel }),
-    orderUseCases: createOrderUseCases({ client, model: fastModel }),
-    proposeEnumValues: createProposeEnumValues({ client, model: fastModel }),
-    proposeStack: createProposeStack({ client, model: deepModel }),
-    explainStack: createExplainStack({ client, model: fastModel }),
-    proposeStructure: createProposeStructure({ client, model: fastModel }),
-    synthesiseArchitecture: createSynthesiseArchitecture({ client, model: deepModel }),
-    sequence: createSequence({ client, model: deepModel }),
+    extract: createExtract({ client, model }),
+    suggestCapabilities: createSuggestCapabilities({ client, model }),
+    happyPath: createHappyPath({ client, model }),
+    failureQuestions: createFailureQuestions({ client, model }),
+    failureStructure: createFailureStructure({ client, model }),
+    orderUseCases: createOrderUseCases({ client, model }),
+    proposeEnumValues: createProposeEnumValues({ client, model }),
+    proposeStack: createProposeStack({ client, model }),
+    explainStack: createExplainStack({ client, model }),
+    proposeStructure: createProposeStructure({ client, model }),
+    synthesiseArchitecture: createSynthesiseArchitecture({ client, model }),
+    sequence: createSequence({ client, model }),
   };
 }

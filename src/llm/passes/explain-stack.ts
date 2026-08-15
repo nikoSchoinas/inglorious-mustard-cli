@@ -25,7 +25,7 @@ export type ExplainStackFn = (
 
 export interface ExplainStackDeps {
   client: LLMClient;
-  /** The fast-tier model handle. */
+  /** The LLM model handle. */
   model: LanguageModel;
 }
 

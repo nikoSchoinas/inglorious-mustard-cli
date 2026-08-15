@@ -32,7 +32,7 @@ export type ProposeEnumValuesFn = (
 
 export interface ProposeEnumValuesDeps {
   client: LLMClient;
-  /** The fast-tier model handle. */
+  /** The LLM model handle. */
   model: LanguageModel;
 }
 

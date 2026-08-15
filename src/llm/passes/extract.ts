@@ -20,7 +20,7 @@ export type ExtractFn = (session: MustardSession) => Promise<LlmOutcome<DomainEx
 
 export interface ExtractDeps {
   client: LLMClient;
-  /** The fast-tier model handle. */
+  /** The LLM model handle. */
   model: LanguageModel;
 }
 

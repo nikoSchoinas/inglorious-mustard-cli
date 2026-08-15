@@ -9,7 +9,7 @@ import { phaseStateOf, projectAnswers } from './input.js';
  * The real ANALYSE pass (spec §8.2 step 2), wiring the versioned `analyse` system
  * prompt and the `PhaseAnalysis` contract through the `LLMClient`. Generic over any
  * phase: it projects the current phase's answers into a deterministic input and
- * asks the fast model to critique them.
+ * asks the model to critique them.
  *
  * Returns the client's `LlmOutcome` verbatim — the runner treats a `degraded`
  * analysis as "nothing flagged, ready to synthesise" (runner.ts), and a hard
@@ -17,7 +17,7 @@ import { phaseStateOf, projectAnswers } from './input.js';
  */
 export interface AnalyseDeps {
   client: LLMClient;
-  /** The fast-tier model handle. */
+  /** The LLM model handle. */
   model: LanguageModel;
 }
 

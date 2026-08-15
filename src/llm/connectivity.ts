@@ -1,6 +1,7 @@
 import { APICallError } from 'ai';
 import { z } from 'zod';
 import type { MustardConfig } from '../schemas/config.js';
+import { activityHook } from './activity.js';
 import { LLMClient, type LLMClientOptions, LlmUnavailableError } from './client.js';
 import { connectivityPrompt } from './prompts/connectivity.js';
 import { createModelForTier } from './router.js';
@@ -38,8 +39,13 @@ export async function checkConnectivity(
   config: MustardConfig,
   opts: CheckConnectivityOptions,
 ): Promise<ConnectivityResult> {
-  const client = new LLMClient({ transport: opts.transport, ...opts.clientOptions });
-  const model = createModelForTier(config, 'fast', {
+  const client = new LLMClient({
+    transport: opts.transport,
+    onActivityStart: activityHook(),
+    ...opts.clientOptions,
+  });
+  // The good (deep) model everywhere — even this cheap Phase 0 probe.
+  const model = createModelForTier(config, 'deep', {
     apiKey: opts.apiKey,
     baseURL: opts.baseURL,
   });

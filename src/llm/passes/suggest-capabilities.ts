@@ -33,7 +33,7 @@ export type SuggestCapabilitiesFn = (
 
 export interface SuggestCapabilitiesDeps {
   client: LLMClient;
-  /** The fast-tier model handle. */
+  /** The LLM model handle. */
   model: LanguageModel;
 }
 

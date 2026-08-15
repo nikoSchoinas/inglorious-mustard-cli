@@ -35,7 +35,7 @@ export type FailureStructureFn = (
 
 export interface FailureStructureDeps {
   client: LLMClient;
-  /** The fast-tier model handle. */
+  /** The LLM model handle. */
   model: LanguageModel;
 }
 

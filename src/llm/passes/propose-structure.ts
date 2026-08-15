@@ -22,7 +22,7 @@ export type ProposeStructureFn = (
 
 export interface ProposeStructureDeps {
   client: LLMClient;
-  /** The fast-tier model handle. */
+  /** The LLM model handle. */
   model: LanguageModel;
 }
 
