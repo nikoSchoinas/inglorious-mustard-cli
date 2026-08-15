@@ -34,21 +34,22 @@ describe('applyConfigSet', () => {
       { provider: 'anthropic', apiKey: 'sk-1', keySource: 'config' },
       home,
     );
+    // Only `deep` is persisted — the retired fast tier never reaches disk.
     const defaults = bundledDefaults('anthropic');
-    expect(result.config.models).toEqual(defaults);
+    expect(result.config.models).toEqual({ deep: defaults.deep });
     expect(result.config.apiKeySource).toBe('config');
     expect(result.config.apiKey).toBe('sk-1');
     expect(result.keyStored).toBe('config');
   });
 
   it('throws when no provider is available to start from', async () => {
-    await expect(applyConfigSet({ fast: 'x' }, home)).rejects.toThrow(/no provider/i);
+    await expect(applyConfigSet({ deep: 'x' }, home)).rejects.toThrow(/no provider/i);
   });
 
   it('reseeds models from the manifest when the provider changes', async () => {
     await applyConfigSet({ provider: 'anthropic', apiKey: 'sk', keySource: 'config' }, home);
     const result = await applyConfigSet({ provider: 'openai' }, home);
-    expect(result.config.models).toEqual(bundledDefaults('openai'));
+    expect(result.config.models).toEqual({ deep: bundledDefaults('openai').deep });
   });
 
   it('stores the key in the keyring and keeps it out of the file', async () => {

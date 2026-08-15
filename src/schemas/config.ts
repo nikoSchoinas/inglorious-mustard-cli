@@ -12,7 +12,9 @@ import { z } from 'zod';
 export const MustardConfig = z.object({
   provider: z.enum(['anthropic', 'openai', 'google', 'ollama']),
   models: z.object({
-    fast: z.string().min(1),
+    // Legacy: the retired fast tier. Tolerated so older config files still parse;
+    // nothing reads it — every LLM call uses `deep`.
+    fast: z.string().min(1).optional(),
     deep: z.string().min(1),
   }),
   apiKeySource: z.enum(['env', 'config', 'keyring']),

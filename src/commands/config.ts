@@ -27,7 +27,6 @@ import { pc } from '../ui/color.js';
 
 export interface ConfigSetOptions {
   provider?: Provider;
-  fast?: string;
   deep?: string;
   telemetry?: boolean;
   apiKey?: string;
@@ -64,8 +63,9 @@ export async function applyConfigSet(
   // override is given; otherwise keep what the user had.
   const providerChanged = existing?.provider !== provider;
   const base = existing && !providerChanged ? existing.models : bundledDefaults(provider);
+  // Only `deep` is written: every LLM call uses it, and any legacy `fast` value is
+  // dropped on save (the schema tolerates it on read).
   const models = {
-    fast: options.fast ?? base.fast,
     deep: options.deep ?? base.deep,
   };
 
@@ -152,8 +152,7 @@ export async function describeConfig(home?: string): Promise<string> {
   return [
     pc.bold('MUSTARD configuration'),
     `  provider    ${config.provider}`,
-    `  fast model  ${config.models.fast}`,
-    `  deep model  ${config.models.deep}`,
+    `  model       ${config.models.deep}`,
     `  key source  ${config.apiKeySource}`,
     `  api key     ${keyLine}`,
     `  telemetry   ${config.telemetry ? 'on (opt-in)' : 'off'}`,
@@ -176,9 +175,8 @@ export function formatModels(manifest: ModelManifest, current?: MustardConfig | 
     }
     const mark = current?.provider === provider ? pc.green(' (current)') : '';
     lines.push(`${pc.cyan(provider)}${mark}`);
-    lines.push(`  fast  ${entry.fast}`);
-    lines.push(`  deep  ${entry.deep}`);
-    lines.push(`  docs  ${pc.dim(entry.docsUrl)}`);
+    lines.push(`  model  ${entry.deep}`);
+    lines.push(`  docs   ${pc.dim(entry.docsUrl)}`);
     lines.push('');
   }
   lines.push(
@@ -201,10 +199,9 @@ export function buildConfigCommand(): Command {
 
   config
     .command('set')
-    .description('Set provider, models, API key or telemetry.')
+    .description('Set provider, model, API key or telemetry.')
     .option('--provider <provider>', 'anthropic | openai | google | ollama')
-    .option('--fast <model>', 'model ID for the fast (ANALYSE) tier')
-    .option('--deep <model>', 'model ID for the deep (SYNTHESISE) tier')
+    .option('--deep <model>', 'model ID MUSTARD uses for every LLM call')
     .option('--api-key <key>', 'API key to store')
     .option('--key-source <source>', 'env | config | keyring (where to keep the key)')
     .option('--telemetry', 'enable anonymised telemetry (opt-in, off by default)')
@@ -212,7 +209,6 @@ export function buildConfigCommand(): Command {
     .action(async (opts) => {
       const result = await applyConfigSet({
         provider: opts.provider,
-        fast: opts.fast,
         deep: opts.deep,
         apiKey: opts.apiKey,
         keySource: opts.keySource,
