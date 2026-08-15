@@ -33,7 +33,7 @@ export function createAnalyse(deps: AnalyseDeps): AnalyseFn {
 
     return deps.client.generate({
       pass: 'analyse',
-      tier: 'fast',
+      tier: 'deep',
       system: analysePrompt,
       input,
       prompt: `Analyse the answers for phase "${phase.name}":\n\n${JSON.stringify(input.answers, null, 2)}`,

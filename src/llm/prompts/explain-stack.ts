@@ -2,7 +2,7 @@ import type { SystemPrompt } from './types.js';
 
 /**
  * The Phase 4 "explain more" pass (spec §8.7: the review offers `explain more` on
- * a proposed `StackDecision`). A cheap fast-tier elaboration — the user wants a
+ * a proposed `StackDecision`). A short elaboration — the user wants a
  * bit more before accepting a choice, not a new proposal.
  *
  * `version` flows into the fixture key — bump it on any wording change.

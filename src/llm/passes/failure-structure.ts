@@ -50,7 +50,7 @@ export function createFailureStructure(deps: FailureStructureDeps): FailureStruc
 
     return deps.client.generate({
       pass: 'failure-structure',
-      tier: 'fast',
+      tier: 'deep',
       system: failureStructurePrompt,
       input,
       prompt: `Structure these answered failure questions for "${useCase.title}" into failure paths:\n\n${JSON.stringify(input.items, null, 2)}`,

@@ -10,7 +10,7 @@ import { phaseStateOf } from './input.js';
  * The Phase 3 enum-discovery pass (spec §8.6). The frozen `DomainExtraction` records
  * `isEnum: true` for an attribute but no values, so for each enum attribute this pass
  * proposes the likely allowed values; the orchestrator shows them as a multiselect the
- * user confirms and extends. Fast tier — this is a suggestion, refined by the user.
+ * user confirms and extends. A suggestion only — refined by the user.
  *
  * The output is a local `z.array(z.string())`, so the pass owns its own fixture key and
  * the frozen schemas are untouched.
@@ -55,7 +55,7 @@ export function createProposeEnumValues(deps: ProposeEnumValuesDeps): ProposeEnu
 
     return deps.client.generate({
       pass: 'propose-enum-values',
-      tier: 'fast',
+      tier: 'deep',
       system: proposeEnumValuesPrompt,
       input,
       prompt: `Propose the allowed values for the "${attribute.attributeName}" of a ${attribute.entityName} in this product:\n\n${description}`,

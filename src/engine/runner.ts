@@ -51,14 +51,14 @@ export interface SynthesisOutput {
   artifacts: ReadonlyArray<{ name: string; body: string }>;
 }
 
-/** The ANALYSE pass (fast model) — the same shape for every phase (§8.2 step 2). */
+/** The ANALYSE pass — the same shape for every phase (§8.2 step 2). */
 export type AnalyseFn = (
   phase: Phase,
   session: MustardSession,
 ) => Promise<LlmOutcome<PhaseAnalysis>>;
 
 /**
- * The SYNTHESISE pass (deep model) — per-phase, returns a typed object rendered
+ * The SYNTHESISE pass — per-phase, returns a typed object rendered
  * to markdown (§8.2 step 4). `steering` carries the review-gate redo intent:
  * `'detail'` (redo with more detail) or `'differently'` (redo answering
  * differently) both re-run only synthesis with a different prompt hint.

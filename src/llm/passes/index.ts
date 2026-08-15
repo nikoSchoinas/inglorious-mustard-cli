@@ -36,29 +36,29 @@ import { createSynthesise } from './synthesise.js';
 export interface Passes {
   analyse: AnalyseFn;
   synthesise: SynthesiseFn;
-  /** Phase 2 EXTRACT pass (fast) — owned by the `runPhase2A` orchestrator, not `runPhase`. */
+  /** Phase 2 EXTRACT pass — owned by the `runPhase2A` orchestrator, not `runPhase`. */
   extract: ExtractFn;
-  /** Phase 2 per-actor capability suggestion pass (fast). */
+  /** Phase 2 per-actor capability suggestion pass. */
   suggestCapabilities: SuggestCapabilitiesFn;
-  /** Phase 2B per-use-case happy-path draft pass (fast). */
+  /** Phase 2B per-use-case happy-path draft pass. */
   happyPath: HappyPathFn;
-  /** Phase 2B per-use-case failure-question pass (fast) — the signature interrogation. */
+  /** Phase 2B per-use-case failure-question pass — the signature interrogation. */
   failureQuestions: FailureQuestionsFn;
-  /** Phase 2B per-use-case failure-structuring pass (fast). */
+  /** Phase 2B per-use-case failure-structuring pass. */
   failureStructure: FailureStructureFn;
-  /** Phase 2B dependency-ordering pass (fast). */
+  /** Phase 2B dependency-ordering pass. */
   orderUseCases: OrderUseCasesFn;
-  /** Phase 3 per-enum-attribute value-proposal pass (fast) — owned by `runPhase3`. */
+  /** Phase 3 per-enum-attribute value-proposal pass — owned by `runPhase3`. */
   proposeEnumValues: ProposeEnumValuesFn;
-  /** Phase 4 stack-proposal pass (deep) — owned by `runPhase4`. */
+  /** Phase 4 stack-proposal pass — owned by `runPhase4`. */
   proposeStack: ProposeStackFn;
-  /** Phase 4 "explain more" pass (fast) — owned by `runPhase4`. */
+  /** Phase 4 "explain more" pass — owned by `runPhase4`. */
   explainStack: ExplainStackFn;
-  /** Phase 4 folder-tree pass (fast) — owned by `runPhase4`. */
+  /** Phase 4 folder-tree pass — owned by `runPhase4`. */
   proposeStructure: ProposeStructureFn;
-  /** Phase 5 architecture-synthesis pass (deep) — owned by `runPhase5`. */
+  /** Phase 5 architecture-synthesis pass — owned by `runPhase5`. */
   synthesiseArchitecture: SynthesiseArchitectureFn;
-  /** Phase 6 task-sequencing pass (deep) — owned by `runPhase6`. */
+  /** Phase 6 task-sequencing pass — owned by `runPhase6`. */
   sequence: SequenceFn;
 }
 
@@ -85,8 +85,8 @@ export function buildPasses(config: MustardConfig, opts: BuildPassesOptions = {}
     opts.client ??
     new LLMClient({ transport, onActivityStart: activityHook(mode), ...opts.clientOptions });
 
-  // Every pass runs on the good (deep) model — the fast tier misbehaved, so it's
-  // no longer used for model selection (the per-pass `tier` still drives timeouts).
+  // Every pass runs on the deep model — the fast tier was retired after quality
+  // problems. Each call declares `tier: 'deep'` so its timeout matches the model.
   const model = createModelForTier(config, 'deep', { apiKey: opts.apiKey });
   const registry = opts.registry ?? createRendererRegistry();
 

@@ -3,7 +3,7 @@ import type { SystemPrompt } from './types.js';
 /**
  * The Phase 4 folder-tree pass (spec §3.2, §8.7): `03-STRUCTURE.md`, rendered at
  * the end of Phase 4 against the ACCEPTED stack (a folder tree cannot precede the
- * stack it must match — pitfall §7.1). Fast tier — a conventional layout for the
+ * stack it must match — pitfall §7.1). A conventional layout for the
  * chosen frameworks, not a research task.
  *
  * `version` flows into the fixture key — bump it on any wording change.

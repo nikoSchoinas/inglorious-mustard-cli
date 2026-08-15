@@ -55,7 +55,7 @@ export async function checkConnectivity(
     // returned value — reaching here at all proves connectivity.
     await client.generate({
       pass: 'connectivity',
-      tier: 'fast',
+      tier: 'deep',
       system: connectivityPrompt,
       input: { probe: true },
       prompt: 'Reply with {"ok": true}.',

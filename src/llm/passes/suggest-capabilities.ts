@@ -53,7 +53,7 @@ export function createSuggestCapabilities(deps: SuggestCapabilitiesDeps): Sugges
 
     return deps.client.generate({
       pass: 'suggest-capabilities',
-      tier: 'fast',
+      tier: 'deep',
       system: suggestCapabilitiesPrompt,
       input,
       prompt: `Suggest capabilities for the actor "${actor.name}" (${actor.description}) in this product:\n\n${description}`,

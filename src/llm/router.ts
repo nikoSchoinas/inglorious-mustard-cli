@@ -8,10 +8,12 @@ import type { LlmTier } from './client.js';
 import { bundledDefaults } from './manifest.js';
 
 /**
- * Fast/deep model routing and the provider factory (spec §8.2 model routing, §9.5).
- * ANALYSE/extraction run on `fast`, SYNTHESISE on `deep`. Model IDs come from the
- * user's config (seeded from the manifest at setup), never hardcoded here — this
- * file contains provider *wiring* only, no model-name literals.
+ * Model resolution and the provider factory (spec §8.2 model routing, §9.5).
+ * Every pass runs on the `deep` model — the fast tier was retired after quality
+ * problems, though the tier machinery is kept so it can return as an opt-in.
+ * Model IDs come from the user's config (seeded from the manifest at setup),
+ * never hardcoded here — this file contains provider *wiring* only, no
+ * model-name literals.
  */
 
 /** The two model IDs for a config, falling back to the manifest if somehow blank. */

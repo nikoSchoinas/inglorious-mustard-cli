@@ -8,7 +8,7 @@ import { proposeStructurePrompt } from '../prompts/propose-structure.js';
 import { phaseStateOf } from './input.js';
 
 /**
- * The Phase 4 folder-tree pass (spec §3.2, §8.7). Fast-tier: given the ACCEPTED
+ * The Phase 4 folder-tree pass (spec §3.2, §8.7): given the ACCEPTED
  * stack and the data models, propose an idiomatic starting `03-STRUCTURE.md` tree.
  * Runs after the decision loop, so the choices it sees are the user's final ones.
  *
@@ -39,7 +39,7 @@ export function createProposeStructure(deps: ProposeStructureDeps): ProposeStruc
 
     return deps.client.generate({
       pass: 'propose-structure',
-      tier: 'fast',
+      tier: 'deep',
       system: proposeStructurePrompt,
       input,
       prompt: `Propose the starting folder tree for a repository on this accepted stack:\n\n${JSON.stringify(input, null, 2)}`,

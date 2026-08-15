@@ -54,7 +54,7 @@ export function createFailureQuestions(deps: FailureQuestionsDeps): FailureQuest
 
     return deps.client.generate({
       pass: 'failure-questions',
-      tier: 'fast',
+      tier: 'deep',
       system: failureQuestionsPrompt,
       input,
       prompt: `Generate the failure questions for the use case "${useCase.title}". Its happy path is:\n\n${JSON.stringify(useCase.happyPath, null, 2)}`,

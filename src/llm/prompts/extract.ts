@@ -1,7 +1,7 @@
 import type { SystemPrompt } from './types.js';
 
 /**
- * The Phase 2 EXTRACT pass (spec §8.5 step 2) — the fast-model reading of the user's
+ * The Phase 2 EXTRACT pass (spec §8.5 step 2) — the model's reading of the user's
  * raw first-person description into a typed `DomainExtraction`: actors, entities
  * (with attributes and relationships) and an initial set of capabilities. This is
  * step 2 of the "capture → extract → reflect → capabilities" flow; the user then

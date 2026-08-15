@@ -35,7 +35,7 @@ export function createOrderUseCases(deps: OrderUseCasesDeps): OrderUseCasesFn {
 
     return deps.client.generate({
       pass: 'order-use-cases',
-      tier: 'fast',
+      tier: 'deep',
       system: orderUseCasesPrompt,
       input,
       prompt: `Put these use cases in build order (return the titles):\n\n${JSON.stringify(

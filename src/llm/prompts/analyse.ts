@@ -1,7 +1,7 @@
 import type { SystemPrompt } from './types.js';
 
 /**
- * The ANALYSE pass (spec §8.2 step 2) — the fast-model critique run after a phase's
+ * The ANALYSE pass (spec §8.2 step 2) — the critique run after a phase's
  * seed questions. It reads the answers so far and returns a typed `PhaseAnalysis`:
  * gaps worth a follow-up, contradictions, derived facts, and whether the phase is
  * ready to synthesise. Generic across phases.

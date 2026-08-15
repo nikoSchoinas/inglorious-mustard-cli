@@ -56,7 +56,7 @@ export function createHappyPath(deps: HappyPathDeps): HappyPathFn {
 
     return deps.client.generate({
       pass: 'happy-path',
-      tier: 'fast',
+      tier: 'deep',
       system: happyPathPrompt,
       input,
       prompt: `Draft the happy path for "${useCase.title}" performed by ${actor.name} in this product:\n\n${description}`,
