@@ -41,6 +41,7 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "test": "vitest run",
+    "golden": "tsx tests/golden/run.ts",
     "smoke": "bash tests/smoke/run-smoke.sh",
     "prepack": "pnpm build",
     "changeset": "changeset",

@@ -9,16 +9,17 @@ import type { GoldenProject } from './projects/types.js';
 import { runRubric } from './rubric.js';
 
 /**
- * The golden-set runner (technical-plan §5, M15) — the entrypoint the nightly job invokes.
+ * The golden-set runner (technical-plan §5, M15) — run on demand via `pnpm golden`
+ * before merging prompt edits or cutting a release (there is no scheduled CI job).
  * For each registered golden project it drives the full mission, runs the deterministic
- * rubric, calls the LLM judge, and writes a `scores.json` artifact tracked per commit.
+ * rubric, calls the LLM judge, and writes a `scores.json` artifact.
  *
  * Transport mode comes from `MUSTARD_LLM_MODE`:
  *   - `fake` (default, offline): each project's canned `fakeSteps` drive the mission; the
  *     judge is skipped (no fixture), so only the deterministic rubric scores. Zero tokens.
  *   - `replay`: mission + judge read recorded fixtures. Zero tokens, still deterministic.
  *   - `record` / `real`: a real provider key is resolved and REAL tokens are spent — the
- *     nightly path, where prompt edits move the judge score.
+ *     mode to use before merging prompt edits, where the judge score moves.
  *
  * A hard budget cap (`MUSTARD_GOLDEN_MAX_PROJECTS`) bounds how many projects a run scores;
  * anything skipped is logged, never silently dropped (§10 "no silent caps").
