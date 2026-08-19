@@ -31,11 +31,11 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
-      # Trusted Publishing (OIDC) needs npm >= 11.5.1; Node 20 ships npm 10.
+      # Trusted Publishing (OIDC) needs npm >= 11.5.1; Node 22 ships npm 10.
       - name: Upgrade npm for OIDC publishing
         run: npm install -g npm@latest
 
