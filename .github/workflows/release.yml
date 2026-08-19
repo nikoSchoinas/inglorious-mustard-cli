@@ -1,0 +1,56 @@
+name: Release
+
+# Runs on every push to main, but does NOT publish on every push. The changesets
+# action decides:
+#   - pending changesets in .changeset/  -> open/update the "Version Packages" PR (no publish)
+#   - no pending changesets + a version not yet on npm -> `pnpm release` publishes it
+# So a release happens only when the version actually changes (i.e. when the
+# "Version Packages" PR is merged). See dev/releasing.md.
+on:
+  push:
+    branches: [main]
+
+# Never let two release runs publish at the same time.
+concurrency: release-${{ github.ref }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push the "Version Packages" PR branch + git tags
+      pull-requests: write # open/update the "Version Packages" PR
+      id-token: write # OIDC — authenticates to npm via Trusted Publishing (no token)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted Publishing (OIDC) needs npm >= 11.5.1; Node 20 ships npm 10.
+      - name: Upgrade npm for OIDC publishing
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Gate — typecheck, lint, test
+        run: pnpm typecheck && pnpm lint && pnpm test
+
+      # No NPM_TOKEN: npm authenticates via OIDC using the Trusted Publisher
+      # configured on the package (Repo + release.yml). Provenance is automatic.
+      - name: Create Version PR or publish
+        uses: changesets/action@v1
+        with:
+          version: pnpm version-packages # bumps package.json + writes CHANGELOG.md
+          publish: pnpm release # pnpm build && changeset publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

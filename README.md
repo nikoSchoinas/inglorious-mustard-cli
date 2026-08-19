@@ -111,8 +111,9 @@ rubric offline; before merging a change to any system prompt, run it against a r
 provider — `MUSTARD_LLM_MODE=real pnpm golden` (spends tokens; cap with
 `MUSTARD_GOLDEN_MAX_PROJECTS=<n>`) — and compare `golden-scores.json` against `main`.
 
-Releases use [changesets](https://github.com/changesets/changesets) — see
-[`docs/releasing.md`](docs/releasing.md).
+Releases are automated with [changesets](https://github.com/changesets/changesets): add a
+changeset to your PR and merging the bot's "Version Packages" PR publishes to npm. See
+[`dev/releasing.md`](dev/releasing.md).
 
 ## Licence
 
